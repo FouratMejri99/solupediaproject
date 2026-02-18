@@ -6,6 +6,15 @@ const supabaseUrl =
   "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
+// Formspree Configuration (FREE - up to 10 submissions/month)
+// Works directly from browser without backend API
+const FORMSPREE_FORM_ID = import.meta.env.VITE_FORMSPREE_FORM_ID || "";
+const FORMSPREE_LEAD_FORM_ID =
+  import.meta.env.VITE_FORMSPREE_LEAD_FORM_ID || FORMSPREE_FORM_ID;
+
+// Admin emails for notifications
+const ADMIN_EMAILS = ["weseily@gmail.com", "info@solupedia.com"];
+
 export const supabase: SupabaseClient = createClient(
   supabaseUrl,
   supabaseAnonKey
@@ -360,24 +369,39 @@ export const servicesService = {
   async create(data: any) {
     // Sanitize inputs to prevent XSS and injection attacks
     const sanitize = (val: string | null | undefined) => {
-      if (!val || typeof val !== 'string') return '';
-      return val.trim().replace(/<script/gi, '').replace(/javascript:/gi, '').replace(/on\w+=/gi, '').substring(0, 1000);
+      if (!val || typeof val !== "string") return "";
+      return val
+        .trim()
+        .replace(/<script/gi, "")
+        .replace(/javascript:/gi, "")
+        .replace(/on\w+=/gi, "")
+        .substring(0, 1000);
     };
-    
+
     const sanitizeSlug = (val: string | null | undefined) => {
-      if (!val || typeof val !== 'string') return '';
-      return val.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 100);
+      if (!val || typeof val !== "string") return "";
+      return val
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "")
+        .substring(0, 100);
     };
 
     // Map camelCase to snake_case for database
     const dbData = {
       name: sanitize(data.name),
       slug: sanitizeSlug(data.slug),
-      shortdescription: sanitize(data.shortDescription || data.shortdescription),
+      shortdescription: sanitize(
+        data.shortDescription || data.shortdescription
+      ),
       description: sanitize(data.description),
       icon: sanitize(data.icon),
-      orderindex: Math.max(0, Math.floor(Number(data.orderIndex || data.orderindex || 0))),
-      ispublished: (data.isPublished ?? data.ispublished) ?? true,
+      orderindex: Math.max(
+        0,
+        Math.floor(Number(data.orderIndex || data.orderindex || 0))
+      ),
+      ispublished: data.isPublished ?? data.ispublished ?? true,
       image: data.image || null,
     };
     return dbService.insert("services", dbData);
@@ -386,24 +410,38 @@ export const servicesService = {
   async update(id: number, data: any) {
     // Sanitize inputs
     const sanitize = (val: string | null | undefined) => {
-      if (!val || typeof val !== 'string') return undefined;
-      return val.trim().replace(/<script/gi, '').replace(/javascript:/gi, '').replace(/on\w+=/gi, '').substring(0, 1000);
+      if (!val || typeof val !== "string") return undefined;
+      return val
+        .trim()
+        .replace(/<script/gi, "")
+        .replace(/javascript:/gi, "")
+        .replace(/on\w+=/gi, "")
+        .substring(0, 1000);
     };
-    
+
     const sanitizeSlug = (val: string | null | undefined) => {
-      if (!val || typeof val !== 'string') return undefined;
-      return val.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 100);
+      if (!val || typeof val !== "string") return undefined;
+      return val
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "")
+        .substring(0, 100);
     };
 
     // Map camelCase to snake_case for database
     const dbData: any = {};
     if (data.name !== undefined) dbData.name = sanitize(data.name);
     if (data.slug !== undefined) dbData.slug = sanitizeSlug(data.slug);
-    if (data.shortDescription !== undefined) dbData.shortdescription = sanitize(data.shortDescription);
-    if (data.description !== undefined) dbData.description = sanitize(data.description);
+    if (data.shortDescription !== undefined)
+      dbData.shortdescription = sanitize(data.shortDescription);
+    if (data.description !== undefined)
+      dbData.description = sanitize(data.description);
     if (data.icon !== undefined) dbData.icon = sanitize(data.icon);
-    if (data.orderIndex !== undefined) dbData.orderindex = Math.max(0, Math.floor(Number(data.orderIndex)));
-    if (data.isPublished !== undefined) dbData.ispublished = Boolean(data.isPublished);
+    if (data.orderIndex !== undefined)
+      dbData.orderindex = Math.max(0, Math.floor(Number(data.orderIndex)));
+    if (data.isPublished !== undefined)
+      dbData.ispublished = Boolean(data.isPublished);
     if (data.image !== undefined) dbData.image = data.image;
     dbData.updatedat = new Date().toISOString();
     return dbService.update("services", id, dbData);
@@ -415,7 +453,7 @@ export const servicesService = {
 
   async seedServices() {
     // First, delete all existing services
-    const existing = await dbService.select<{id: number}>("services", {});
+    const existing = await dbService.select<{ id: number }>("services", {});
     for (const service of existing) {
       await dbService.delete("services", service.id);
     }
@@ -431,7 +469,8 @@ export const servicesService = {
         icon: "BookOpen",
         orderindex: 1,
         ispublished: true,
-        image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
+        image:
+          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
       },
       {
         name: "Media Localization",
@@ -443,7 +482,8 @@ export const servicesService = {
         icon: "Video",
         orderindex: 2,
         ispublished: true,
-        image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80",
+        image:
+          "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80",
       },
       {
         name: "Accessibility",
@@ -455,7 +495,8 @@ export const servicesService = {
         icon: "Zap",
         orderindex: 3,
         ispublished: true,
-        image: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&q=80",
+        image:
+          "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&q=80",
       },
       {
         name: "Document & DTP",
@@ -467,7 +508,8 @@ export const servicesService = {
         icon: "Globe",
         orderindex: 4,
         ispublished: true,
-        image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&q=80",
+        image:
+          "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&q=80",
       },
       {
         name: "Content Creation",
@@ -479,7 +521,8 @@ export const servicesService = {
         icon: "FileText",
         orderindex: 5,
         ispublished: true,
-        image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80",
+        image:
+          "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80",
       },
       {
         name: "AI Workflows",
@@ -491,7 +534,8 @@ export const servicesService = {
         icon: "Users",
         orderindex: 6,
         ispublished: true,
-        image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
+        image:
+          "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
       },
     ];
 
@@ -560,7 +604,11 @@ export const testimonialsService = {
 };
 
 // Leads service
-type SubscriptionType = "lead" | "newsletter" | "quote_request" | "guide_request";
+type SubscriptionType =
+  | "lead"
+  | "newsletter"
+  | "quote_request"
+  | "guide_request";
 
 export const leadsService = {
   async submit(data: {
@@ -627,9 +675,6 @@ export const leadsService = {
     serviceInterest?: string;
     type?: SubscriptionType;
   }) {
-    // In production, this would send emails via a backend service
-    // For now, we'll log and simulate the notification
-    const adminEmails = ["weseily@gmail.com", "info@solupedia.com"];
     const typeLabels: Record<SubscriptionType, string> = {
       lead: "Contact Form Lead",
       newsletter: "Newsletter Subscription",
@@ -637,19 +682,64 @@ export const leadsService = {
       guide_request: "Guide Request",
     };
 
-    console.log("Admin notification would be sent to:", adminEmails);
+    // If Formspree is configured, send actual email (FREE - up to 10 submissions/month)
+    if (FORMSPREE_LEAD_FORM_ID) {
+      try {
+        const formData = new FormData();
+        formData.append("name", data.name || "Newsletter Subscriber");
+        formData.append("email", data.email);
+        formData.append("company", data.company || "N/A");
+        formData.append("phone", data.phone || "N/A");
+        formData.append("message", data.message || "N/A");
+        formData.append("service_interest", data.serviceInterest || "N/A");
+        formData.append("type", typeLabels[data.type || "lead"]);
+        formData.append("submission_date", new Date().toLocaleString());
+        // Copy to admin emails
+        formData.append("_cc", ADMIN_EMAILS.join(","));
+
+        const response = await fetch(
+          `https://formspree.io/f/${FORMSPREE_LEAD_FORM_ID}`,
+          {
+            method: "POST",
+            body: formData,
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          console.log(
+            "Admin notification email sent successfully via Formspree!"
+          );
+          return { success: true, message: "Admin notification email sent" };
+        } else {
+          throw new Error("Formspree submission failed");
+        }
+      } catch (error) {
+        console.error("Failed to send admin notification email:", error);
+        return {
+          success: false,
+          message: "Failed to send admin notification email",
+        };
+      }
+    }
+
+    // Fallback: Log for debugging
+    console.log("Admin notification would be sent to:", ADMIN_EMAILS);
     console.log("Type:", typeLabels[data.type || "lead"]);
     console.log("Data:", data);
+    console.log(
+      "Formspree not configured - set VITE_FORMSPREE_FORM_ID in .env"
+    );
 
-    // Simulate sending (in production, integrate with email service like SendGrid, AWS SES, etc.)
-    return { success: true, message: "Admin notification queued" };
+    return {
+      success: true,
+      message: "Admin notification queued (Formspree not configured)",
+    };
   },
 
   async sendConfirmationEmail(email: string, type: SubscriptionType) {
-    // In production, this would send a confirmation email
-    console.log("Confirmation email would be sent to:", email);
-    console.log("Type:", type);
-
     const messages: Record<SubscriptionType, string> = {
       lead: "Thank you for contacting us! We will be in touch shortly.",
       newsletter: "Thank you for subscribing to our newsletter!",
@@ -659,15 +749,33 @@ export const leadsService = {
         "Thank you for your guide request! Check your email for the download link.",
     };
 
-    console.log("Message:", messages[type]);
+    // If Formspree is configured, auto-response can be enabled in Formspree dashboard
+    // Formspree free tier doesn't support programmatic confirmation emails
+    if (FORMSPREE_FORM_ID) {
+      console.log(
+        "Formspree configured - auto-response can be enabled in Formspree dashboard"
+      );
+      return { success: true, message: "Confirmation handled via Formspree" };
+    }
 
-    return { success: true, message: "Confirmation email queued" };
+    // Fallback: Log for debugging
+    console.log("Confirmation email would be sent to:", email);
+    console.log("Type:", type);
+    console.log("Message:", messages[type]);
+    console.log(
+      "Formspree not configured - set VITE_FORMSPREE_FORM_ID in .env"
+    );
+
+    return {
+      success: true,
+      message: "Confirmation email queued (Formspree not configured)",
+    };
   },
 
   async getAllLeads(type?: SubscriptionType) {
     const options: any = { order: "createdat", ascending: false };
     // Only filter for quote_request and guide_request, show all for other cases
-    if (type === 'quote_request' || type === 'guide_request') {
+    if (type === "quote_request" || type === "guide_request") {
       options.eq = { type };
     }
     return dbService.select("leads", options);
@@ -948,11 +1056,7 @@ export const adminService = {
 
   async deleteEmployeeRecords(employeeId: number) {
     // Delete related records in proper order (child tables first)
-    await dbService.deleteByField(
-      "monthlyreports",
-      "employeeid",
-      employeeId
-    );
+    await dbService.deleteByField("monthlyreports", "employeeid", employeeId);
     await dbService.deleteByField(
       "timetrackingrecords",
       "employeeid",
