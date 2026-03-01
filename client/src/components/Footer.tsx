@@ -18,23 +18,12 @@ import { Link } from "wouter";
 function Footer() {
   const [email, setEmail] = useState("");
 
-  const subscribeNewsletter = trpc.leads.subscribeNewsletter.useMutation as any;
+  const subscribeNewsletter = trpc.leads.subscribeNewsletter.useMutation();
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      subscribeNewsletter.mutate(
-        { email, type: "newsletter" },
-        {
-          onSuccess: () => {
-            toast.success("Successfully subscribed to newsletter!");
-            setEmail("");
-          },
-          onError: (error: any) => {
-            toast.error(error?.message || "Failed to subscribe. Please try again.");
-          },
-        }
-      );
+      subscribeNewsletter.mutate({ email, type: "newsletter" });
     }
   };
 

@@ -69,15 +69,14 @@ export default function AdminSubscribers() {
     setNewsletterError(null);
     try {
       const { data, error } = await supabase
-        .from("newsletter_subscriptions")
-        .select("*")
-        .eq("type", "newsletter");
+        .from("newsletter")
+        .select("*");
 
       if (error) throw error;
-      // Sort by subscribedat descending on client side
+      // Sort by created_at descending on client side
       const sortedData = (data || []).sort((a, b) => {
-        const dateA = new Date(a.subscribedat || 0).getTime();
-        const dateB = new Date(b.subscribedat || 0).getTime();
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
         return dateB - dateA;
       });
       setNewsletterData(sortedData);
