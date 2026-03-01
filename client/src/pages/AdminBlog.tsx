@@ -19,7 +19,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
   Edit2,
   FileText,
   Plus,
@@ -204,6 +206,7 @@ export default function AdminBlog() {
     tags: "",
     featuredImage: "",
     published: true,
+    order: 0,
   });
 
   const utils = trpc.useUtils();
@@ -211,9 +214,11 @@ export default function AdminBlog() {
   const createMutation = trpc.blog.create.useMutation();
   const updateMutation = trpc.blog.update.useMutation();
   const deleteMutation = trpc.blog.delete.useMutation();
+  const updateOrderMutation = trpc.blog.updateOrder.useMutation();
   const uploadMutation = trpc.blog.uploadImage.useMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [orderingId, setOrderingId] = useState<number | null>(null);
 
   // Check admin session on mount
   useEffect(() => {
@@ -282,6 +287,54 @@ export default function AdminBlog() {
     }
   };
 
+  const handleMoveUp = async (id: number, idx: number) => {
+    if (!filteredPosts || idx === 0) return;
+    setOrderingId(id);
+    try {
+      const currentPost = filteredPosts[idx];
+      const prevPost = filteredPosts[idx - 1];
+      // Swap orders
+      await updateOrderMutation.mutateAsync({
+        id,
+        order: prevPost.order ?? idx,
+      });
+      await updateOrderMutation.mutateAsync({
+        id: prevPost.id,
+        order: currentPost.order ?? idx + 1,
+      });
+      utils.invalidate("blog.all");
+      toast.success("Order updated");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update order");
+    } finally {
+      setOrderingId(null);
+    }
+  };
+
+  const handleMoveDown = async (id: number, idx: number) => {
+    if (!filteredPosts || idx === filteredPosts.length - 1) return;
+    setOrderingId(id);
+    try {
+      const currentPost = filteredPosts[idx];
+      const nextPost = filteredPosts[idx + 1];
+      // Swap orders
+      await updateOrderMutation.mutateAsync({
+        id,
+        order: nextPost.order ?? idx + 2,
+      });
+      await updateOrderMutation.mutateAsync({
+        id: nextPost.id,
+        order: currentPost.order ?? idx + 1,
+      });
+      utils.invalidate("blog.all");
+      toast.success("Order updated");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update order");
+    } finally {
+      setOrderingId(null);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: "",
@@ -293,6 +346,7 @@ export default function AdminBlog() {
       tags: "",
       featuredImage: "",
       published: true,
+      order: 0,
     });
     setEditingPost(null);
   };
@@ -415,21 +469,47 @@ export default function AdminBlog() {
                       )}
                       <CardHeader className="flex-1 pb-2">
                         <div className="flex items-start justify-between mb-2">
-                          {post.category && (
-                            <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-1 rounded-full">
-                              {post.category}
+                          <div className="flex items-center gap-2">
+                            {post.category && (
+                              <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-1 rounded-full">
+                                {post.category}
+                              </span>
+                            )}
+                            <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                              #{post.order ?? idx + 1}
                             </span>
-                          )}
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full font-medium ${
-                              post.published
-                                ? "bg-green-100 text-green-700 border border-green-200"
-                                : "bg-gray-100 text-gray-700 border border-gray-200"
-                            }`}
-                          >
-                            {post.published ? "Published" : "Draft"}
-                          </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleMoveUp(post.id, idx)}
+                              disabled={idx === 0 || orderingId === post.id}
+                              className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="Move up"
+                            >
+                              <ArrowUp size={14} className="text-gray-500" />
+                            </button>
+                            <button
+                              onClick={() => handleMoveDown(post.id, idx)}
+                              disabled={
+                                idx === (filteredPosts?.length ?? 1) - 1 ||
+                                orderingId === post.id
+                              }
+                              className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="Move down"
+                            >
+                              <ArrowDown size={14} className="text-gray-500" />
+                            </button>
+                          </div>
                         </div>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            post.published
+                              ? "bg-green-100 text-green-700 border border-green-200"
+                              : "bg-gray-100 text-gray-700 border border-gray-200"
+                          }`}
+                        >
+                          {post.published ? "Published" : "Draft"}
+                        </span>
                         <CardTitle className="text-lg font-bold text-gray-900 line-clamp-2">
                           {post.title}
                         </CardTitle>
@@ -460,6 +540,7 @@ export default function AdminBlog() {
                                 tags: post.tags || "",
                                 featuredImage: post.featuredImage || "",
                                 published: post.published ?? true,
+                                order: post.order ?? 0,
                               });
                               setShowForm(true);
                             }}
@@ -615,6 +696,24 @@ export default function AdminBlog() {
                   setFormData({ ...formData, tags: e.target.value })
                 }
                 placeholder="e.g., technology, news, updates"
+                className="rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="order">Display Order</Label>
+              <Input
+                id="order"
+                type="number"
+                min="0"
+                value={formData.order}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    order: parseInt(e.target.value) || 0,
+                  })
+                }
+                placeholder="Order number (lower numbers appear first)"
                 className="rounded-xl"
               />
             </div>

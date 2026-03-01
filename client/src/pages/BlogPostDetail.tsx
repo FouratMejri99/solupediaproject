@@ -19,7 +19,7 @@ export default function BlogPostDetail() {
   // Filter out current post and get related posts
   const relatedPosts = allPosts
     ?.filter((p: { slug: string }) => p.slug !== slug)
-    .slice(0, 2);
+    .slice(0, 3);
 
   if (isLoading) {
     return (
@@ -189,7 +189,7 @@ export default function BlogPostDetail() {
                 <h3 className="text-3xl font-bold text-gray-900 mb-10">
                   More Blog Posts
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {relatedPosts.map(
                     (
                       relatedPost: {
@@ -210,9 +210,9 @@ export default function BlogPostDetail() {
                         transition={{ delay: idx * 0.1 }}
                       >
                         <Link href={`/blog/${relatedPost.slug}`}>
-                          <Card className="h-full hover:shadow-xl transition-all cursor-pointer flex flex-col border-none shadow-lg bg-white/80 backdrop-blur-sm group overflow-hidden rounded-3xl">
+                          <Card className="hover:shadow-xl transition-all cursor-pointer flex flex-col border-none shadow-lg bg-white/80 backdrop-blur-sm group overflow-hidden rounded-2xl">
                             {relatedPost.featuredImage && (
-                              <div className="w-full h-52 bg-gray-200 overflow-hidden relative">
+                              <div className="w-full h-36 bg-gray-200 overflow-hidden relative">
                                 <img
                                   src={relatedPost.featuredImage}
                                   alt={relatedPost.title}
@@ -221,19 +221,19 @@ export default function BlogPostDetail() {
                                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
                               </div>
                             )}
-                            <CardContent className="flex-1 p-8">
-                              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold uppercase tracking-wide mb-4">
+                            <CardContent className="flex-1 p-4">
+                              <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold uppercase tracking-wide mb-2">
                                 {relatedPost.category}
                               </span>
-                              <h4 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                              <h4 className="text-base font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
                                 {relatedPost.title}
                               </h4>
-                              <p className="text-gray-600 line-clamp-3 leading-relaxed">
+                              <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
                                 {relatedPost.excerpt}
                               </p>
-                              <div className="mt-6 flex items-center text-blue-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
+                              <div className="mt-3 flex items-center text-blue-600 font-semibold text-xs group-hover:translate-x-1 transition-transform">
                                 Read Article{" "}
-                                <ArrowRight size={16} className="ml-2" />
+                                <ArrowRight size={14} className="ml-1" />
                               </div>
                             </CardContent>
                           </Card>

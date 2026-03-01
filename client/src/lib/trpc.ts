@@ -378,6 +378,13 @@ export const trpc = {
         return blogService.delete(id);
       }),
     },
+    updateOrder: {
+      useMutation: createMutationHook(
+        async (data: { id: number; order: number }) => {
+          return blogService.updateOrder(data.id, data.order);
+        }
+      ),
+    },
     uploadImage: {
       useMutation: createMutationHook(
         async (data: {

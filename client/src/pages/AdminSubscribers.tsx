@@ -7,9 +7,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { trpc } from "@/lib/trpc";
+import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, Mail, Search, Users, FileText, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  FileText,
+  Mail,
+  Search,
+  Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -20,6 +27,101 @@ export default function AdminSubscribers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>("leads");
 
+  // Supabase leads data
+  const [leadsData, setLeadsData] = useState<any[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(true);
+  const [leadsError, setLeadsError] = useState<string | null>(null);
+
+  // Supabase newsletter and guide data
+  const [newsletterData, setNewsletterData] = useState<any[]>([]);
+  const [newsletterLoading, setNewsletterLoading] = useState(true);
+  const [newsletterError, setNewsletterError] = useState<string | null>(null);
+  const [guideData, setGuideData] = useState<any[]>([]);
+  const [guideLoading, setGuideLoading] = useState(true);
+  const [guideError, setGuideError] = useState<string | null>(null);
+
+  // Fetch leads from Supabase
+  const fetchLeadsFromSupabase = async () => {
+    setLeadsLoading(true);
+    setLeadsError(null);
+    try {
+      const { data, error } = await supabase.from("leads").select("*");
+
+      if (error) throw error;
+      // Sort by createdat descending on client side
+      const sortedData = (data || []).sort((a, b) => {
+        const dateA = new Date(a.createdat || 0).getTime();
+        const dateB = new Date(b.createdat || 0).getTime();
+        return dateB - dateA;
+      });
+      setLeadsData(sortedData);
+    } catch (err: any) {
+      console.error("Error fetching leads from Supabase:", err);
+      setLeadsError(err.message);
+    } finally {
+      setLeadsLoading(false);
+    }
+  };
+
+  // Fetch newsletter subscriptions from Supabase
+  const fetchNewsletterFromSupabase = async () => {
+    setNewsletterLoading(true);
+    setNewsletterError(null);
+    try {
+      const { data, error } = await supabase
+        .from("newsletter_subscriptions")
+        .select("*")
+        .eq("type", "newsletter");
+
+      if (error) throw error;
+      // Sort by subscribedat descending on client side
+      const sortedData = (data || []).sort((a, b) => {
+        const dateA = new Date(a.subscribedat || 0).getTime();
+        const dateB = new Date(b.subscribedat || 0).getTime();
+        return dateB - dateA;
+      });
+      setNewsletterData(sortedData);
+    } catch (err: any) {
+      console.error("Error fetching newsletter from Supabase:", err);
+      setNewsletterError(err.message);
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
+
+  // Fetch guide requests from Supabase
+  const fetchGuideFromSupabase = async () => {
+    setGuideLoading(true);
+    setGuideError(null);
+    try {
+      const { data, error } = await supabase
+        .from("newsletter_subscriptions")
+        .select("*")
+        .eq("type", "guide_request");
+
+      if (error) throw error;
+      // Sort by subscribedat descending on client side
+      const sortedData = (data || []).sort((a, b) => {
+        const dateA = new Date(a.subscribedat || 0).getTime();
+        const dateB = new Date(b.subscribedat || 0).getTime();
+        return dateB - dateA;
+      });
+      setGuideData(sortedData);
+    } catch (err: any) {
+      console.error("Error fetching guide requests from Supabase:", err);
+      setGuideError(err.message);
+    } finally {
+      setGuideLoading(false);
+    }
+  };
+
+  // Fetch all data on mount
+  useEffect(() => {
+    fetchLeadsFromSupabase();
+    fetchNewsletterFromSupabase();
+    fetchGuideFromSupabase();
+  }, []);
+
   // Check if admin is logged in
   useEffect(() => {
     const adminSession = localStorage.getItem("adminSession");
@@ -28,43 +130,57 @@ export default function AdminSubscribers() {
     }
   }, [setLocation]);
 
-  // Fetch data based on active tab
-  const leadsQuery = trpc.leads.getLeads.useQuery() as any;
-  const quoteQuery = trpc.leads.getLeads.useQuery("quote_request") as any;
-  const newsletterQuery = trpc.leads.getSubscriptions.useQuery("newsletter") as any;
-  const guideQuery = trpc.leads.getSubscriptions.useQuery("guide_request") as any;
-  
-  const currentData = activeTab === "leads" ? leadsQuery?.data 
-    : activeTab === "newsletter" ? newsletterQuery?.data 
-    : guideQuery?.data;
-  const currentLoading = activeTab === "leads" ? leadsQuery?.isLoading 
-    : activeTab === "newsletter" ? newsletterQuery?.isLoading 
-    : guideQuery?.isLoading;
-  const currentRefetch = activeTab === "leads" ? leadsQuery?.refetch 
-    : activeTab === "newsletter" ? newsletterQuery?.refetch 
-    : guideQuery?.refetch;
+  // Current data based on tab
+  const currentData =
+    activeTab === "leads"
+      ? leadsData
+      : activeTab === "newsletter"
+        ? newsletterData
+        : guideData;
+  const currentLoading =
+    activeTab === "leads"
+      ? leadsLoading
+      : activeTab === "newsletter"
+        ? newsletterLoading
+        : guideLoading;
+  const currentRefetch =
+    activeTab === "leads"
+      ? fetchLeadsFromSupabase
+      : activeTab === "newsletter"
+        ? fetchNewsletterFromSupabase
+        : fetchGuideFromSupabase;
 
   // Filter data
   const allSubscribers = (currentData || []).filter((item: any) => {
-    // Filter by search
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
+      // For leads, search by name, email, company
+      if (activeTab === "leads") {
+        return (
+          (item.name || "").toLowerCase().includes(search) ||
+          (item.email || "").toLowerCase().includes(search) ||
+          (item.company || "").toLowerCase().includes(search)
+        );
+      }
+      // For newsletter and guide, search by email
       return getEmail(item).toLowerCase().includes(search);
     }
     return true;
   });
 
   // Stats
-  const leadsCount = (leadsQuery?.data || []).length;
-  const quoteCount = (quoteQuery?.data || []).length;
-  const newsletterCount = (newsletterQuery?.data || []).length;
-  const guideCount = (guideQuery?.data || []).length;
-  const totalCount = leadsCount + quoteCount + newsletterCount + guideCount;
+  const leadsCount = leadsData.length;
+  const newsletterCount = newsletterData.length;
+  const guideCount = guideData.length;
+  const totalCount = leadsCount + newsletterCount + guideCount;
 
   // Debug: Show error if any
-  const currentError = activeTab === "leads" ? leadsQuery?.error
-    : activeTab === "newsletter" ? newsletterQuery?.error
-    : guideQuery?.error;
+  const currentError =
+    activeTab === "leads"
+      ? leadsError
+      : activeTab === "newsletter"
+        ? newsletterError
+        : guideError;
 
   const handleExportCSV = () => {
     const headers = ["Email", "Subscribed At"];
@@ -94,6 +210,24 @@ export default function AdminSubscribers() {
       minute: "2-digit",
     });
   };
+
+  // Helper to get name from lead
+  const getName = (item: any) => item.name || "-";
+
+  // Helper to get company from lead
+  const getCompany = (item: any) => item.company || "-";
+
+  // Helper to get phone from lead
+  const getPhone = (item: any) => item.phone || "-";
+
+  // Helper to get service interest from lead
+  const getServiceInterest = (item: any) => item.serviceinterest || "-";
+
+  // Helper to get type from lead
+  const getType = (item: any) => item.type || "lead";
+
+  // Helper to get message from lead
+  const getMessage = (item: any) => item.message || "-";
 
   // Helper to get subscribed date from different column names
   const getSubscribedDate = (item: any) => {
@@ -139,9 +273,7 @@ export default function AdminSubscribers() {
                 <span className="text-white font-bold">S</span>
               </motion.div>
               <div>
-                <h1 className="font-bold text-gray-900">
-                  Subscribers & Leads
-                </h1>
+                <h1 className="font-bold text-gray-900">Subscribers & Leads</h1>
                 <p className="text-xs text-gray-600">
                   Manage leads, newsletter subscribers, and guide requests
                 </p>
@@ -184,7 +316,7 @@ export default function AdminSubscribers() {
                   <div>
                     <p className="text-sm text-gray-500">Total Leads</p>
                     <p className="text-3xl font-bold text-gray-900">
-                      {leadsCount + quoteCount}
+                      {leadsCount}
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -270,7 +402,7 @@ export default function AdminSubscribers() {
             className={activeTab === "leads" ? "bg-blue-600" : ""}
           >
             <Users size={16} className="mr-2" />
-            Leads ({leadsCount + quoteCount})
+            Leads ({leadsCount})
           </Button>
           <Button
             variant={activeTab === "newsletter" ? "default" : "outline"}
@@ -298,7 +430,11 @@ export default function AdminSubscribers() {
               size={20}
             />
             <Input
-              placeholder="Search by email..."
+              placeholder={
+                activeTab === "leads"
+                  ? "Search by name, email, or company..."
+                  : "Search by email..."
+              }
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -306,13 +442,22 @@ export default function AdminSubscribers() {
           </div>
         </div>
 
+        {/* Error Message */}
+        {currentError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+            Error: {currentError}
+          </div>
+        )}
+
         {/* Subscribers Table */}
         <Card className="border-none shadow-lg">
           <CardHeader>
             <CardTitle>
-              {activeTab === "leads" ? "Leads & Quote Requests" 
-                : activeTab === "newsletter" ? "Newsletter Subscribers" 
-                : "Guide Requests"}
+              {activeTab === "leads"
+                ? "Leads & Quote Requests"
+                : activeTab === "newsletter"
+                  ? "Newsletter Subscribers"
+                  : "Guide Requests"}
             </CardTitle>
             <CardDescription>
               {allSubscribers.length} record(s) found
@@ -327,41 +472,126 @@ export default function AdminSubscribers() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-600">
-                        Email
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-600">
-                        Subscribed At
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allSubscribers.map((subscriber: any, idx: number) => (
-                      <motion.tr
-                        key={subscriber.id || idx}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: idx * 0.02 }}
-                        className="border-b hover:bg-gray-50"
-                      >
-                        <td className="py-3 px-4">
-                          <a
-                            href={`mailto:${getEmail(subscriber)}`}
-                            className="text-blue-600 hover:underline"
-                          >
-                            {getEmail(subscriber)}
-                          </a>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {formatDate(getSubscribedDate(subscriber))}
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
+                {activeTab === "leads" ? (
+                  // Leads table with more columns
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Name
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Email
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Company
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Phone
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Service Interest
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Type
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Created At
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allSubscribers.map((lead: any, idx: number) => (
+                        <motion.tr
+                          key={lead.id || idx}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: idx * 0.02 }}
+                          className="border-b hover:bg-gray-50"
+                        >
+                          <td className="py-3 px-4 text-sm">{getName(lead)}</td>
+                          <td className="py-3 px-4">
+                            <a
+                              href={`mailto:${getEmail(lead)}`}
+                              className="text-blue-600 hover:underline"
+                            >
+                              {getEmail(lead)}
+                            </a>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {getCompany(lead)}
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {getPhone(lead) !== "-" ? (
+                              <a
+                                href={`tel:${getPhone(lead)}`}
+                                className="text-blue-600 hover:underline"
+                              >
+                                {getPhone(lead)}
+                              </a>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {getServiceInterest(lead)}
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <span
+                              className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                                getType(lead) === "quote_request"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              {getType(lead)}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {formatDate(lead.createdat)}
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  // Newsletter/Guide table (original format)
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Email
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Subscribed At
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allSubscribers.map((subscriber: any, idx: number) => (
+                        <motion.tr
+                          key={subscriber.id || idx}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: idx * 0.02 }}
+                          className="border-b hover:bg-gray-50"
+                        >
+                          <td className="py-3 px-4">
+                            <a
+                              href={`mailto:${getEmail(subscriber)}`}
+                              className="text-blue-600 hover:underline"
+                            >
+                              {getEmail(subscriber)}
+                            </a>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {formatDate(getSubscribedDate(subscriber))}
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             )}
           </CardContent>

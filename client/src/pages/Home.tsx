@@ -3,28 +3,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Award,
-  BookOpen,
   CheckCircle,
-  FileText,
   Globe,
   Users,
-  Video,
   Zap,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 
 export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0);
-  
+
   // Fetch services from database with refresh key
-  const servicesQuery = trpc.services.list.useQuery({ _t: refreshKey } as any) as any;
+  const servicesQuery = trpc.services.list.useQuery({
+    _t: refreshKey,
+  } as any) as any;
   const services = servicesQuery?.data;
   const servicesLoading = servicesQuery?.isLoading;
-  
+
   const { data: testimonials, isLoading: testimonialsLoading } =
     trpc.testimonials.list.useQuery();
   const { data: caseStudies, isLoading: caseStudiesLoading } =
@@ -40,8 +39,9 @@ export default function Home() {
         setRefreshKey(k => k + 1);
       }
     };
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
   // Show skeleton while loading, but only for initial load
@@ -58,7 +58,8 @@ export default function Home() {
       shortDescription:
         "Storyline development and deep technical localization for interactive training.",
       icon: "BookOpen",
-      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
     },
     {
       id: 2,
@@ -67,7 +68,8 @@ export default function Home() {
       shortDescription:
         "OST, subtitling, voiceover, and AI-assisted services for multimedia.",
       icon: "Video",
-      image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80",
     },
     {
       id: 3,
@@ -76,7 +78,8 @@ export default function Home() {
       shortDescription:
         "EAA enforcement, remediation, and standards compliance for all content.",
       icon: "Zap",
-      image: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&q=80",
     },
     {
       id: 4,
@@ -85,7 +88,8 @@ export default function Home() {
       shortDescription:
         "RTL expertise, graphics localization, and template management.",
       icon: "Globe",
-      image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&q=80",
     },
     {
       id: 5,
@@ -94,7 +98,8 @@ export default function Home() {
       shortDescription:
         "Build once, localize efficiently - 40-60% cost savings with our methodology.",
       icon: "FileText",
-      image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80",
     },
     {
       id: 6,
@@ -103,7 +108,8 @@ export default function Home() {
       shortDescription:
         "AI at every pipeline stage with intelligent tiering for maximum efficiency.",
       icon: "Users",
-      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
     },
   ];
 
@@ -305,46 +311,53 @@ export default function Home() {
                 Our Services
               </h2>
               <p className="text-xl text-gray-600 mt-4 max-w-2xl mx-auto">
-                Comprehensive localization solutions tailored to your industry and content type.
+                Comprehensive localization solutions tailored to your industry
+                and content type.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {(displayServices as any[]).slice(0, 6).map((service: any, idx: number) => (
-                <Link key={service.id || idx} href={`/services/${service.slug}`}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                    whileHover={{ y: -5 }}
-                    className="group cursor-pointer"
+              {(displayServices as any[])
+                .slice(0, 6)
+                .map((service: any, idx: number) => (
+                  <Link
+                    key={service.id || idx}
+                    href={`/services/${service.slug}`}
                   >
-                    <Card className="h-full overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300">
-                      {/* Service Image */}
-                      <div className="h-48 overflow-hidden relative">
-                        <img
-                          src={service.image || "/placeholder-service.jpg"}
-                          alt={service.name}
-                          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                      </div>
-                      <CardContent className="p-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                          {service.name}
-                        </h3>
-                        <p className="text-gray-600 text-sm line-clamp-2">
-                          {service.shortDescription || service.shortdescription}
-                        </p>
-                        <div className="mt-4 flex items-center text-blue-600 font-medium text-sm">
-                          Learn More <ArrowRight className="ml-1 w-4 h-4" />
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      whileHover={{ y: -5 }}
+                      className="group cursor-pointer"
+                    >
+                      <Card className="h-full overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300">
+                        {/* Service Image */}
+                        <div className="h-48 overflow-hidden relative">
+                          <img
+                            src={service.image || "/placeholder-service.jpg"}
+                            alt={service.name}
+                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </Link>
-              ))}
+                        <CardContent className="p-6">
+                          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                            {service.name}
+                          </h3>
+                          <p className="text-gray-600 text-sm line-clamp-2">
+                            {service.shortDescription ||
+                              service.shortdescription}
+                          </p>
+                          <div className="mt-4 flex items-center text-blue-600 font-medium text-sm">
+                            Learn More <ArrowRight className="ml-1 w-4 h-4" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </Link>
+                ))}
             </div>
 
             <div className="text-center mt-12">
@@ -374,23 +387,51 @@ export default function Home() {
 
           {/* Featured Partnership */}
           <div className="mb-16">
-            <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-6 text-center">
-              Featured
-            </p>
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 max-w-4xl mx-auto">
-              <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-4">
-                FEATURED PARTNERSHIP
-              </p>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                The Ken Blanchard Companies
-              </h3>
-              <p className="text-gray-600">
-                Primary localization engineering partner from 2018–2025. Managed
-                trademark transition, eLearning re-engineering, media
-                localization, and accessibility compliance across 21 languages
-                and thousands of assets including SLII®, Self Leadership, and
-                more.
-              </p>
+            <div className="relative max-w-5xl mx-auto">
+              <div
+                className="bg-gradient-to-br from-white to-blue-50 
+                  rounded-3xl 
+                  shadow-xl 
+                  border border-blue-100 
+                  p-10 md:p-14 
+                  transition-all duration-300 hover:shadow-2xl"
+              >
+                {/* Badge */}
+                <div className="flex justify-center mb-8">
+                  <span
+                    className="px-4 py-1.5 text-xs font-semibold tracking-widest 
+                       uppercase bg-blue-100 text-blue-700 
+                       rounded-full"
+                  >
+                    Featured Partnership
+                  </span>
+                </div>
+
+                {/* Logo */}
+                <div className="flex justify-center mb-8">
+                  <img
+                    src="/Blanchard_Logo.png"
+                    alt="The Ken Blanchard Companies Logo"
+                    className="h-20 md:h-24 object-contain transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
+
+                {/* Description */}
+                <p className="text-gray-600 text-center leading-relaxed max-w-3xl mx-auto">
+                  Primary localization engineering partner from{" "}
+                  <span className="font-semibold">2018–2025</span>. Managed
+                  trademark transition, eLearning re-engineering, media
+                  localization, and accessibility compliance across{" "}
+                  <span className="font-semibold">21 languages </span>
+                  and thousands of assets including{" "}
+                  <span className="font-medium">SLII®</span>,
+                  <span className="font-medium"> Self Leadership</span>, and
+                  more.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -402,17 +443,12 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-6">
               {/* Microsoft */}
               <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center mb-3">
-                  <svg
-                    className="w-10 h-10 text-white"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z"
-                      fill="currentColor"
-                    />
-                  </svg>
+                <div className="w-16 h-16 flex items-center justify-center mb-3">
+                  <img
+                    src="/Microsoft logo.jpg"
+                    alt="Microsoft Logo"
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <span className="text-sm font-semibold text-gray-900">
                   Microsoft
@@ -424,17 +460,12 @@ export default function Home() {
 
               {/* Adobe */}
               <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center mb-3">
-                  <svg
-                    className="w-10 h-10 text-white"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M13.966 22.624l-1.69-4.281H8.122l3.892-9.144 5.662 13.425h-3.71zm-8.122 0H1v-19h4.844l-2.5 19zM16.136 3.5H22v19h-5.864l-2.223-19zM9.706 3.5L8.128 10.24l1.578 12.257h4.662l2.226-8.996-1.58-6.001H9.706z"
-                      fill="currentColor"
-                    />
-                  </svg>
+                <div className="w-16 h-16 flex items-center justify-center mb-3">
+                  <img
+                    src="/adobe-creative-cloud.png"
+                    alt="Adobe Logo"
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <span className="text-sm font-semibold text-gray-900">
                   Adobe
@@ -446,29 +477,12 @@ export default function Home() {
 
               {/* Google */}
               <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center mb-3">
-                  <svg
-                    className="w-10 h-10 text-white"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      fill="#FBBC05"
-                    />
-                    <path
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      fill="#EA4335"
-                    />
-                  </svg>
+                <div className="w-16 h-16 flex items-center justify-center mb-3">
+                  <img
+                    src="/google.png"
+                    alt="Google Logo"
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <span className="text-sm font-semibold text-gray-900">
                   Google
@@ -480,8 +494,12 @@ export default function Home() {
 
               {/* MadCap Software */}
               <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center mb-3">
-                  <span className="text-white font-bold text-lg">MadCap</span>
+                <div className="w-16 h-16 flex items-center justify-center mb-3">
+                  <img
+                    src="/madcap.png"
+                    alt="MadCap Software Logo"
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <span className="text-sm font-semibold text-gray-900">
                   MadCap Software
@@ -493,19 +511,12 @@ export default function Home() {
 
               {/* Articulate */}
               <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center mb-3">
-                  <svg
-                    className="w-10 h-10 text-white"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                  </svg>
+                <div className="w-16 h-16 flex items-center justify-center mb-3">
+                  <img
+                    src="/articulate_logo_black.jpeg"
+                    alt="Articulate Logo"
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <span className="text-sm font-semibold text-gray-900">
                   Articulate
@@ -517,22 +528,12 @@ export default function Home() {
 
               {/* DominKnow */}
               <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg flex items-center justify-center mb-3">
-                  <svg
-                    className="w-10 h-10 text-white"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                    <circle cx="12" cy="12" r="4" fill="currentColor" />
-                  </svg>
+                <div className="w-16 h-16 flex items-center justify-center mb-3">
+                  <img
+                    src="/dominknow-logo.png"
+                    alt="DominKnow Logo"
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <span className="text-sm font-semibold text-gray-900">
                   DominKnow
@@ -544,8 +545,12 @@ export default function Home() {
 
               {/* Clip Studio Paint */}
               <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-700 rounded-lg flex items-center justify-center mb-3">
-                  <span className="text-white font-bold text-xs">CSP</span>
+                <div className="w-16 h-16 flex items-center justify-center mb-3">
+                  <img
+                    src="/clip-studio-paint.jpg"
+                    alt="Clip Studio Paint Logo"
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <span className="text-sm font-semibold text-gray-900">
                   Clip Studio Paint

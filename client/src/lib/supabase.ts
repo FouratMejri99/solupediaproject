@@ -188,10 +188,19 @@ export const dbService = {
 // Blog service
 export const blogService = {
   async getAll() {
-    return dbService.select("blogposts", {
-      order: "createdAt",
-      ascending: false,
-    });
+    // Try to order by 'order' field, fall back to createdAt if it doesn't exist
+    try {
+      return await dbService.select("blogposts", {
+        order: "order",
+        ascending: true,
+      });
+    } catch (e) {
+      // If 'order' field doesn't exist, fallback to createdAt
+      return dbService.select("blogposts", {
+        order: "createdAt",
+        ascending: false,
+      });
+    }
   },
 
   async getBySlug(slug: string) {
@@ -220,6 +229,10 @@ export const blogService = {
 
   async delete(id: number) {
     return dbService.delete("blogposts", id);
+  },
+
+  async updateOrder(id: number, order: number) {
+    return dbService.update("blogposts", id, { order });
   },
 
   // Upload blog images to Supabase storage bucket
@@ -682,7 +695,36 @@ export const leadsService = {
       guide_request: "Guide Request",
     };
 
-    // If Formspree is configured, send actual email (FREE - up to 10 submissions/month)
+    // Use Node.js server API if available, otherwise fallback to Formspree
+    const API_URL = import.meta.env.VITE_API_URL || "";
+
+    if (API_URL) {
+      try {
+        const response = await fetch(`${API_URL}/api/send-lead`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.name,
+            email: data.email,
+            company: data.company,
+            phone: data.phone,
+            message: data.message,
+            service: data.serviceInterest,
+          }),
+        });
+
+        if (response.ok) {
+          console.log("Lead notification sent via Nodemailer server!");
+          return { success: true, message: "Admin notification sent" };
+        } else {
+          throw new Error("Server API failed");
+        }
+      } catch (error) {
+        console.error("Failed to send via server API:", error);
+      }
+    }
+
+    // Fallback to Formspree if configured
     if (FORMSPREE_LEAD_FORM_ID) {
       try {
         const formData = new FormData();
@@ -749,8 +791,29 @@ export const leadsService = {
         "Thank you for your guide request! Check your email for the download link.",
     };
 
-    // If Formspree is configured, auto-response can be enabled in Formspree dashboard
-    // Formspree free tier doesn't support programmatic confirmation emails
+    // Use Node.js server API if available
+    const API_URL = import.meta.env.VITE_API_URL || "";
+
+    if (API_URL) {
+      try {
+        const response = await fetch(`${API_URL}/api/subscribe`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, type }),
+        });
+
+        if (response.ok) {
+          console.log("Subscription processed via Nodemailer server!");
+          return { success: true, message: "Confirmation email sent" };
+        } else {
+          throw new Error("Server API failed");
+        }
+      } catch (error) {
+        console.error("Failed to send via server API:", error);
+      }
+    }
+
+    // Fallback to Formspree if configured
     if (FORMSPREE_FORM_ID) {
       console.log(
         "Formspree configured - auto-response can be enabled in Formspree dashboard"
