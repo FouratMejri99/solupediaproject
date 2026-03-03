@@ -45,11 +45,12 @@ function Footer() {
       document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
-  const subscribeNewsletter = trpc.leads.subscribeNewsletter.useMutation as any;
+  const subscribeNewsletter = trpc.leads.subscribeNewsletter.useMutation();
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
+<<<<<<< HEAD
       subscribeNewsletter.mutate(
         { email, type: "newsletter" },
         {
@@ -64,6 +65,9 @@ function Footer() {
           },
         }
       );
+=======
+      subscribeNewsletter.mutate({ email, type: "newsletter" });
+>>>>>>> 464559c6dbfe0cdd40345581842c066ab3b3ac61
     }
   };
 

@@ -656,27 +656,26 @@ export const leadsService = {
     email: string,
     type: SubscriptionType = "newsletter"
   ) {
-    const subscriptionData = {
-      email,
-      type,
-      subscribedat: new Date().toISOString(),
-    };
-    const result = await dbService.insert(
-      "newsletter_subscriptions",
-      subscriptionData
-    );
-
-    // Send admin notification
-    await leadsService.sendAdminNotification({
-      email,
-      type,
-      name: "Newsletter Subscriber",
-    });
-
-    // Send confirmation email to subscriber
-    await leadsService.sendConfirmationEmail(email, type);
-
-    return result;
+    if (type === "newsletter") {
+      // Insert into newsletter table
+      const subscriptionData = {
+        email,
+      };
+      const result = await dbService.insert("newsletter", subscriptionData);
+      return result;
+    } else {
+      // Insert into newsletter_subscriptions table for other types (guide_request, etc.)
+      const subscriptionData = {
+        email,
+        type,
+        subscribedat: new Date().toISOString(),
+      };
+      const result = await dbService.insert(
+        "newsletter_subscriptions",
+        subscriptionData
+      );
+      return result;
+    }
   },
 
   async sendAdminNotification(data: {
