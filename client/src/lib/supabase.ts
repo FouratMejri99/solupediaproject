@@ -660,17 +660,16 @@ export const leadsService = {
     name?: string,
     company?: string
   ) {
+    let result;
+
     if (type === "newsletter") {
-      // Insert into newsletter table
       const subscriptionData = {
         email,
         name,
         company,
       };
-      const result = await dbService.insert("newsletter", subscriptionData);
-      return result;
+      result = await dbService.insert("newsletter", subscriptionData);
     } else {
-      // Insert into newsletter_subscriptions table for other types (guide_request, etc.)
       const subscriptionData = {
         email,
         type,
@@ -678,12 +677,16 @@ export const leadsService = {
         name,
         company,
       };
-      const result = await dbService.insert(
+      result = await dbService.insert(
         "newsletter_subscriptions",
         subscriptionData
       );
-      return result;
     }
+
+    // After persisting the subscription, trigger confirmation + admin email via Node.js server when configured
+    await leadsService.sendConfirmationEmail(email, type);
+
+    return result;
   },
 
   async sendAdminNotification(data: {

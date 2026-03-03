@@ -15,28 +15,36 @@ export default function BlogPostDetail() {
   });
   const { data: allPosts } = trpc.blog.list.useQuery();
 
-  // Always show 3 related posts - repeat posts if needed
   const relatedPosts = (() => {
-    if (!allPosts || !Array.isArray(allPosts) || allPosts.length === 0) {
+    if (!allPosts || !Array.isArray(allPosts) || allPosts.length <= 1) {
       return [];
     }
-    const filtered = allPosts.filter(
-      (p: any) => p && p.slug && p.slug !== slug
-    );
-    if (filtered.length >= 3) {
-      return filtered.slice(0, 3);
+
+    const ordered = allPosts.filter((p: any) => p && p.slug);
+    const currentIndex = ordered.findIndex((p: any) => p.slug === slug);
+
+    if (currentIndex === -1) {
+      // Fallback: just take first up to 3 posts
+      return ordered.slice(0, 3);
     }
-    // Repeat posts to always have 3, but guard against empty filtered array
-    if (filtered.length === 0) {
+
+    const related: typeof ordered = [];
+    // Walk forward from current index, wrapping around, skipping the current post
+    for (
+      let offset = 1;
+      offset < ordered.length && related.length < 3;
+      offset++
+    ) {
+      const idx = (currentIndex + offset) % ordered.length;
+      if (idx === currentIndex) continue;
+      related.push(ordered[idx]);
+    }
+
+    if (related.length === 0) {
       return [];
     }
-    const repeated = [] as typeof filtered;
-    let iterations = 0;
-    while (repeated.length < 3 && iterations < 10) {
-      repeated.push(...filtered);
-      iterations++;
-    }
-    return repeated.slice(0, 3);
+
+    return related;
   })();
 
   if (isLoading) {
@@ -175,11 +183,11 @@ export default function BlogPostDetail() {
           {/* RELATED POSTS */}
           {relatedPosts.length > 0 && (
             <div className="mt-32">
-              <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-16">
+              <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-10">
                 More Blog Posts
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {relatedPosts.map((relatedPost, idx) => (
                   <motion.div
                     key={relatedPost.id}
@@ -189,34 +197,59 @@ export default function BlogPostDetail() {
                     transition={{ delay: idx * 0.15 }}
                   >
                     <Link href={`/blog/${relatedPost.slug}`}>
-                      <Card className="group cursor-pointer overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 flex flex-col">
+                      <Card className="group h-full hover:shadow-xl transition-all cursor-pointer flex flex-col overflow-hidden border-none shadow-lg bg-white/80 backdrop-blur-sm">
                         {relatedPost.featuredImage && (
-                          <div className="w-full h-60 relative overflow-hidden">
+                          <div className="w-full h-48 bg-gray-200 overflow-hidden relative group">
                             <img
                               src={relatedPost.featuredImage}
                               alt={relatedPost.title}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           </div>
                         )}
 
-                        <CardContent className="flex-1 p-7">
-                          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold uppercase tracking-wide mb-4">
-                            {relatedPost.category}
-                          </span>
+                        <CardContent className="flex-1 flex flex-col justify-between pt-5 px-6 pb-6">
+                          {relatedPost.category && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-3 w-fit">
+                              {relatedPost.category}
+                            </span>
+                          )}
 
-                          <h4 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                          <h4 className="text-lg md:text-xl font-bold text-gray-900 mb-2 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
                             {relatedPost.title}
                           </h4>
 
-                          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-                            {relatedPost.excerpt}
-                          </p>
+                          {relatedPost.excerpt && (
+                            <p className="text-gray-600 text-sm line-clamp-3 mb-4 leading-relaxed">
+                              {relatedPost.excerpt}
+                            </p>
+                          )}
 
-                          <div className="mt-8 flex items-center text-blue-600 font-semibold text-sm group-hover:translate-x-2 transition-transform">
-                            Read Article
-                            <ArrowRight size={16} className="ml-2" />
+                          <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-auto">
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              {relatedPost.author && (
+                                <div className="flex items-center gap-1.5 font-medium">
+                                  <User size={14} className="text-blue-500" />
+                                  <span>{relatedPost.author}</span>
+                                </div>
+                              )}
+                              {relatedPost.publishedAt && (
+                                <div className="flex items-center gap-1.5">
+                                  <Calendar
+                                    size={14}
+                                    className="text-blue-500"
+                                  />
+                                  <span>
+                                    {formatDate(relatedPost.publishedAt)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <ArrowRight
+                              size={16}
+                              className="text-blue-600 transform group-hover:translate-x-1 transition-transform"
+                            />
                           </div>
                         </CardContent>
                       </Card>

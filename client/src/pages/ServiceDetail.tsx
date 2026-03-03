@@ -279,11 +279,9 @@ const staticServiceDetails: Record<string, any> = {
 export default function ServiceDetail() {
   const [, params] = useRoute("/services/:slug");
   const slug = params?.slug || "";
-  const [refreshKey, setRefreshKey] = useState(0);
-  
-  // Fetch service from database - use object format with refresh key to force refetch
-  const queryParams = { slug, _t: refreshKey };
-  const queryResult = trpc.services.getBySlug.useQuery(queryParams as any) as any;
+
+  // Fetch service from database by slug
+  const queryResult = trpc.services.getBySlug.useQuery(slug as any) as any;
   const dbService = queryResult?.data;
   const refetch = queryResult?.refetch;
   
@@ -303,13 +301,14 @@ export default function ServiceDetail() {
   // Refresh data when page becomes visible (e.g., after admin update)
   useEffect(() => {
     const handleVisibility = () => {
-      if (!document.hidden) {
-        setRefreshKey(k => k + 1);
+      if (!document.hidden && refetch) {
+        refetch();
       }
     };
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, []);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
+  }, [refetch]);
 
   if (!service) {
     return (

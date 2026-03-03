@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { Link } from "wouter";
+import { toast } from "sonner";
 
 function Footer() {
   const [email, setEmail] = useState("");
@@ -40,7 +41,17 @@ function Footer() {
       service.isPublished !== false && service.ispublished !== false
   );
 
-  const subscribeNewsletter = trpc.leads.subscribeNewsletter.useMutation();
+  const subscribeNewsletter = trpc.leads.subscribeNewsletter.useMutation({
+    onSuccess: () => {
+      toast.success("Thank you for subscribing to our newsletter!");
+      setEmail("");
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message || "Failed to subscribe. Please try again in a moment."
+      );
+    },
+  });
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +113,7 @@ function Footer() {
             </h3>
             <ul className="space-y-3 text-gray-400 text-sm">
               {publishedServices.length > 0 ? (
-                publishedServices.slice(0, 6).map((service: any) => (
+                publishedServices.map((service: any) => (
                   <li key={service.slug || service.id}>
                     <Link href={`/services/${service.slug}`}>
                       <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
@@ -113,40 +124,9 @@ function Footer() {
                   </li>
                 ))
               ) : (
-                <>
-                  <li>
-                    <Link href="/services/document-localization">
-                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                        Document Localization
-                      </a>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/services/elearning-localization">
-                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                        eLearning Localization
-                      </a>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/services/audio-video-localization">
-                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                        Audio/Video Localization
-                      </a>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/services/creation-solutions">
-                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                        Creation Solutions
-                      </a>
-                    </Link>
-                  </li>
-                </>
+                <li className="text-xs text-gray-500">
+                  No services published yet.
+                </li>
               )}
             </ul>
           </div>

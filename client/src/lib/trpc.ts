@@ -459,9 +459,12 @@ export const trpc = {
       }),
     },
     getBySlug: {
-      useQuery: createQueryHook("services.getBySlug", async (slug: string) => {
-        return servicesService.getBySlug(slug);
-      }),
+      useQuery: createParameterizedQueryHook(
+        "services.getBySlug",
+        async (slug: string) => {
+          return servicesService.getBySlug(slug);
+        }
+      ),
     },
     create: {
       useMutation: createMutationHook(async (data: any) => {
