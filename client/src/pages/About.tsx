@@ -85,26 +85,26 @@ export default function About() {
               </h2>
               <div className="space-y-6 text-lg text-gray-600">
                 <p>
-                  Founded in 2006, Solupedia has been at the forefront of the
-                  localization industry for nearly two decades. What started as
-                  a small team of passionate language professionals has grown
-                  into a comprehensive localization powerhouse serving clients
-                  across the globe.
+                  Founded in 2006, Solupedia emerged from a simple insight:
+                  localization is a technical challenge, not just a language
+                  one. Nearly two decades later, we've become the technical
+                  backbone that enterprises trust to handle their most complex
+                  localization needs.
                 </p>
                 <p>
-                  Our journey has been defined by a commitment to excellence,
-                  innovation, and a deep understanding of the complexities
-                  involved in adapting content for different cultures and
-                  languages. We've evolved from traditional translation services
-                  to offering comprehensive localization solutions that
-                  encompass everything from document adaptation to multimedia
-                  content creation.
+                  Our mission has always been clear, eliminate the technical
+                  complexity of localization. We've evolved from traditional
+                  translation services to becoming the technical team that
+                  handles every layer—eLearning engineering, media adaptation,
+                  accessibility compliance, document optimization, content
+                  creation, and AI workflows orchestration.
                 </p>
                 <p>
-                  Today, we're proud to have completed over 7,000 projects for
-                  more than 200 satisfied clients across diverse industries
-                  including technology, healthcare, finance, education, and
-                  entertainment.
+                  We're not just a localization vendor, we're your internal
+                  team. Your encyclopedia of technical solutions. With 7,000+
+                  projects completed for 200+ clients across industries, we've
+                  proven that technical mastery in localization drives real
+                  global impact.
                 </p>
               </div>
             </motion.div>
@@ -201,7 +201,7 @@ export default function About() {
               {
                 icon: Heart,
                 title: "Excellence",
-                desc: "We're committed to delivering the highest quality localization services, with meticulous attention to cultural nuances and linguistic accuracy.",
+                desc: "We're committed to delivering the highest quality localization solutions through meticulous technical engineering, automated workflows, and quality assurance that ensures flawless execution.",
               },
               {
                 icon: Target,
@@ -295,7 +295,7 @@ export default function About() {
                   desc: "Technical experts who manage complex localization workflows and ensure seamless integration",
                 },
                 {
-                  role: "Professional Translators",
+                  role: "RTL Native Speakers",
                   icon: Globe,
                   desc: "Native speakers with subject matter expertise across various industries",
                 },

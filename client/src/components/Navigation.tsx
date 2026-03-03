@@ -6,6 +6,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { trpc } from "@/lib/trpc";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Shield, X } from "lucide-react";
 import { memo, useEffect, useState } from "react";
@@ -15,6 +16,32 @@ function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Fetch services from database with refresh key
+  const servicesQuery = trpc.services.list.useQuery({ _t: refreshKey } as any, {
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+  }) as any;
+  const dbServices = servicesQuery?.data || [];
+  // Filter to show only published services (handle both camelCase and lowercase)
+  const publishedServices = dbServices.filter(
+    (service: any) =>
+      service.isPublished !== false && service.ispublished !== false
+  );
+
+  // Refresh data when page becomes visible (e.g., after admin update)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        setRefreshKey(k => k + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,96 +116,128 @@ function Navigation() {
                           View All
                         </Link>
                       </div>
-                      <Link href="/services/elearning-engineering">
-                        <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-0.5 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                            <span className="text-xs font-bold">EE</span>
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 group-hover:text-blue-700">
-                              eLearning Engineering
-                            </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">
-                              Storyline development
-                            </p>
-                          </div>
-                        </a>
-                      </Link>
-                      <Link href="/services/media-localization">
-                        <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
-                          <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 shrink-0 mt-0.5 group-hover:bg-pink-600 group-hover:text-white transition-colors">
-                            <span className="text-xs font-bold">ML</span>
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 group-hover:text-pink-700">
-                              Media Localization
-                            </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">
-                              OST, subtitling, voiceover
-                            </p>
-                          </div>
-                        </a>
-                      </Link>
-                      <Link href="/services/accessibility">
-                        <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
-                          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0 mt-0.5 group-hover:bg-green-600 group-hover:text-white transition-colors">
-                            <span className="text-xs font-bold">A11</span>
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 group-hover:text-green-700">
-                              Accessibility
-                            </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">
-                              EAA, WCAG, Section 508
-                            </p>
-                          </div>
-                        </a>
-                      </Link>
-                      <Link href="/services/document-dtp">
-                        <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
-                          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0 mt-0.5 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                            <span className="text-xs font-bold">DTP</span>
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 group-hover:text-orange-700">
-                              Document & DTP
-                            </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">
-                              RTL, graphics, templates
-                            </p>
-                          </div>
-                        </a>
-                      </Link>
-                      <Link href="/services/content-creation">
-                        <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
-                          <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 mt-0.5 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                            <span className="text-xs font-bold">CC</span>
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 group-hover:text-purple-700">
-                              Content Creation
-                            </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">
-                              Build once, localize efficiently
-                            </p>
-                          </div>
-                        </a>
-                      </Link>
-                      <Link href="/services/ai-workflows">
-                        <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
-                          <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 shrink-0 mt-0.5 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
-                            <span className="text-xs font-bold">AI</span>
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 group-hover:text-cyan-700">
-                              AI Workflows
-                            </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">
-                              Intelligent tiering
-                            </p>
-                          </div>
-                        </a>
-                      </Link>
+                      {publishedServices.length > 0 ? (
+                        publishedServices.slice(0, 6).map((service: any) => (
+                          <Link
+                            key={service.id}
+                            href={`/services/${service.slug}`}
+                          >
+                            <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-0.5 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <span className="text-xs font-bold">
+                                  {service.name?.substring(0, 2).toUpperCase()}
+                                </span>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 group-hover:text-blue-700">
+                                  {service.name}
+                                </div>
+                                <p className="text-xs text-gray-500 line-clamp-1">
+                                  {service.shortDescription?.substring(0, 30) ||
+                                    service.shortdescription?.substring(
+                                      0,
+                                      30
+                                    ) ||
+                                    "Professional service"}
+                                </p>
+                              </div>
+                            </a>
+                          </Link>
+                        ))
+                      ) : (
+                        <>
+                          <Link href="/services/elearning-engineering">
+                            <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-0.5 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <span className="text-xs font-bold">EE</span>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 group-hover:text-blue-700">
+                                  eLearning Engineering
+                                </div>
+                                <p className="text-xs text-gray-500 line-clamp-1">
+                                  Storyline development
+                                </p>
+                              </div>
+                            </a>
+                          </Link>
+                          <Link href="/services/media-localization">
+                            <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
+                              <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 shrink-0 mt-0.5 group-hover:bg-pink-600 group-hover:text-white transition-colors">
+                                <span className="text-xs font-bold">ML</span>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 group-hover:text-pink-700">
+                                  Media Localization
+                                </div>
+                                <p className="text-xs text-gray-500 line-clamp-1">
+                                  OST, subtitling, voiceover
+                                </p>
+                              </div>
+                            </a>
+                          </Link>
+                          <Link href="/services/accessibility">
+                            <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
+                              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0 mt-0.5 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                                <span className="text-xs font-bold">A11</span>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 group-hover:text-green-700">
+                                  Accessibility
+                                </div>
+                                <p className="text-xs text-gray-500 line-clamp-1">
+                                  EAA, WCAG, Section 508
+                                </p>
+                              </div>
+                            </a>
+                          </Link>
+                          <Link href="/services/document-dtp">
+                            <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
+                              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0 mt-0.5 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                                <span className="text-xs font-bold">DTP</span>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 group-hover:text-orange-700">
+                                  Document & DTP
+                                </div>
+                                <p className="text-xs text-gray-500 line-clamp-1">
+                                  RTL, graphics, templates
+                                </p>
+                              </div>
+                            </a>
+                          </Link>
+                          <Link href="/services/content-creation">
+                            <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
+                              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 mt-0.5 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                                <span className="text-xs font-bold">CC</span>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 group-hover:text-purple-700">
+                                  Content Creation
+                                </div>
+                                <p className="text-xs text-gray-500 line-clamp-1">
+                                  Build once, localize efficiently
+                                </p>
+                              </div>
+                            </a>
+                          </Link>
+                          <Link href="/services/ai-workflows">
+                            <a className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
+                              <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 shrink-0 mt-0.5 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+                                <span className="text-xs font-bold">AI</span>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 group-hover:text-cyan-700">
+                                  AI Workflows
+                                </div>
+                                <p className="text-xs text-gray-500 line-clamp-1">
+                                  Intelligent tiering
+                                </p>
+                              </div>
+                            </a>
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
@@ -269,26 +328,41 @@ function Navigation() {
                     Services
                   </div>
                   <div className="space-y-1 pl-2 border-l-2 border-gray-100">
-                    <Link href="/services/document-localization">
-                      <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
-                        Document Localization
-                      </a>
-                    </Link>
-                    <Link href="/services/elearning-localization">
-                      <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
-                        eLearning Localization
-                      </a>
-                    </Link>
-                    <Link href="/services/audio-video-localization">
-                      <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
-                        Audio/Video Localization
-                      </a>
-                    </Link>
-                    <Link href="/services/creation-solutions">
-                      <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
-                        Creation Solutions
-                      </a>
-                    </Link>
+                    {publishedServices.length > 0 ? (
+                      publishedServices.slice(0, 6).map((service: any) => (
+                        <Link
+                          key={service.id}
+                          href={`/services/${service.slug}`}
+                        >
+                          <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
+                            {service.name}
+                          </a>
+                        </Link>
+                      ))
+                    ) : (
+                      <>
+                        <Link href="/services/document-localization">
+                          <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
+                            Document Localization
+                          </a>
+                        </Link>
+                        <Link href="/services/elearning-localization">
+                          <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
+                            eLearning Localization
+                          </a>
+                        </Link>
+                        <Link href="/services/audio-video-localization">
+                          <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
+                            Audio/Video Localization
+                          </a>
+                        </Link>
+                        <Link href="/services/creation-solutions">
+                          <a className="block py-2 text-sm text-gray-600 hover:text-blue-600">
+                            Creation Solutions
+                          </a>
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
                 <Link href="/case-studies">

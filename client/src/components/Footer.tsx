@@ -11,12 +11,39 @@ import {
   Phone,
   Twitter,
 } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
 function Footer() {
   const [email, setEmail] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Fetch services from database with refresh key
+  const servicesQuery = trpc.services.list.useQuery({ _t: refreshKey } as any, {
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+  }) as any;
+  const dbServices = servicesQuery?.data || [];
+
+  // Filter to show only published services (handle both camelCase and lowercase)
+  const publishedServices = dbServices.filter(
+    (service: any) =>
+      service.isPublished !== false && service.ispublished !== false
+  );
+
+  // Refresh data when page becomes visible (e.g., after admin update)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        setRefreshKey(k => k + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
 
   const subscribeNewsletter = trpc.leads.subscribeNewsletter.useMutation as any;
 
@@ -31,7 +58,9 @@ function Footer() {
             setEmail("");
           },
           onError: (error: any) => {
-            toast.error(error?.message || "Failed to subscribe. Please try again.");
+            toast.error(
+              error?.message || "Failed to subscribe. Please try again."
+            );
           },
         }
       );
@@ -90,38 +119,53 @@ function Footer() {
               Services
             </h3>
             <ul className="space-y-3 text-gray-400 text-sm">
-              <li>
-                <Link href="/services/document-localization">
-                  <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    Document Localization
-                  </a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/services/elearning-localization">
-                  <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    eLearning Localization
-                  </a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/services/audio-video-localization">
-                  <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    Audio/Video Localization
-                  </a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/services/creation-solutions">
-                  <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    Creation Solutions
-                  </a>
-                </Link>
-              </li>
+              {publishedServices.length > 0 ? (
+                publishedServices.slice(0, 6).map((service: any) => (
+                  <li key={service.slug || service.id}>
+                    <Link href={`/services/${service.slug}`}>
+                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                        {service.name}
+                      </a>
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>
+                    <Link href="/services/document-localization">
+                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                        Document Localization
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/services/elearning-localization">
+                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                        eLearning Localization
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/services/audio-video-localization">
+                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                        Audio/Video Localization
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/services/creation-solutions">
+                      <a className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                        Creation Solutions
+                      </a>
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 

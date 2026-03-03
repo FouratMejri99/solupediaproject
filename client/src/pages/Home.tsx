@@ -24,13 +24,25 @@ export default function Home() {
   const services = servicesQuery?.data;
   const servicesLoading = servicesQuery?.isLoading;
 
-  const { data: testimonials, isLoading: testimonialsLoading } =
-    trpc.testimonials.list.useQuery();
   const { data: caseStudies, isLoading: caseStudiesLoading } =
     trpc.caseStudies.list.useQuery();
 
-  const isLoading =
-    servicesLoading || testimonialsLoading || caseStudiesLoading;
+  const isLoading = servicesLoading || caseStudiesLoading;
+
+  // Derive testimonials from case studies that have testimonial content
+  const caseStudyTestimonials =
+    caseStudies
+      ?.filter(
+        (study: any) => study.testimonial && study.testimonial.trim() !== ""
+      )
+      ?.map((study: any) => ({
+        id: study.id,
+        clientName: study.testimonialAuthor || study.clientName,
+        clientRole: study.testimonialRole || study.serviceType,
+        content: study.testimonial,
+        company: study.clientName,
+        avatar: study.clientLogo,
+      })) || [];
 
   // Refresh data when page becomes visible (e.g., after admin update)
   useEffect(() => {
@@ -161,12 +173,16 @@ export default function Home() {
   // Use static data if API data is empty or missing
   const displayServices =
     services && services.length > 0 ? services : staticServices;
-  const displayTestimonials =
-    testimonials && testimonials.length > 0 ? testimonials : staticTestimonials;
   const displayCaseStudies =
     caseStudies && caseStudies.length > 0 ? caseStudies : staticCaseStudies;
   const displaySuccessStories =
     caseStudies && caseStudies.length > 0 ? caseStudies : staticCaseStudies;
+
+  // Use testimonials from case studies, fallback to static testimonials
+  const displayTestimonials =
+    caseStudyTestimonials.length > 0
+      ? caseStudyTestimonials
+      : staticTestimonials;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -202,18 +218,19 @@ export default function Home() {
               transition={{ duration: 0.8 }}
             >
               <div className="inline-block px-4 py-1.5 rounded-full bg-blue-500/30 backdrop-blur-sm text-blue-100 text-sm font-medium mb-6 border border-blue-400/30">
-                🚀 Professional Localization Services
+                🚀 Encyclopedia of Localization Technical Solutions
               </div>
               <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-                Break Language Barriers, <br />
+                Localize Smarter, <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
-                  Expand Globally
+                  Not Harder.
                 </span>
               </h1>
               <p className="text-xl text-blue-100 mb-8 max-w-lg leading-relaxed">
-                Connect with audiences worldwide through professional,
-                culturally-adapted localization solutions. From documents to
-                eLearning, we speak your language.
+                We can be your internal localization team—handling all the
+                technical complexity from eLearning engineering and media
+                adaptation to accessibility, content creation, and AI workflows.
+                Your encyclopedia of localization solutions.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/contact">
@@ -570,16 +587,16 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {/* WCAG 2.1 */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition-shadow">
-                <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg
-                    className="w-8 h-8 text-blue-600"
+                    className="w-8 h-8 text-green-600"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
                   >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 6v6l4 2" />
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22,4 12,14.01 9,11.01" />
                   </svg>
                 </div>
                 <h4 className="text-lg font-bold text-gray-900 mb-2">
@@ -614,15 +631,16 @@ export default function Home() {
 
               {/* Section 508 */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition-shadow">
-                <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg
-                    className="w-8 h-8 text-purple-600"
+                    className="w-8 h-8 text-green-600"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
                   >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22,4 12,14.01 9,11.01" />
                   </svg>
                 </div>
                 <h4 className="text-lg font-bold text-gray-900 mb-2">
