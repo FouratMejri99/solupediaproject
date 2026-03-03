@@ -10,20 +10,31 @@ export default function BlogPostDetail() {
   const params = useParams();
   const slug = params.slug as string;
 
-  const { data: post, isLoading } = trpc.blog.bySlug.useQuery(slug);
+  const { data: post, isLoading } = trpc.blog.bySlug.useQuery(slug, {
+    enabled: !!slug,
+  });
   const { data: allPosts } = trpc.blog.list.useQuery();
 
   // Always show 3 related posts - repeat posts if needed
   const relatedPosts = (() => {
-    const posts = (allPosts as Array<{ slug: string }>) || [];
-    const filtered = posts.filter(p => p.slug !== slug);
+    if (!allPosts || !Array.isArray(allPosts) || allPosts.length === 0) {
+      return [];
+    }
+    const filtered = allPosts.filter(
+      (p: any) => p && p.slug && p.slug !== slug
+    );
     if (filtered.length >= 3) {
       return filtered.slice(0, 3);
     }
-    // Repeat posts to always have 3
+    // Repeat posts to always have 3, but guard against empty filtered array
+    if (filtered.length === 0) {
+      return [];
+    }
     const repeated = [] as typeof filtered;
-    while (repeated.length < 3) {
+    let iterations = 0;
+    while (repeated.length < 3 && iterations < 10) {
       repeated.push(...filtered);
+      iterations++;
     }
     return repeated.slice(0, 3);
   })();

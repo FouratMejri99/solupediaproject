@@ -37,7 +37,7 @@ export default function Blog() {
   const handleSubscribe = (e: FormEvent) => {
     e.preventDefault();
     if (email) {
-      subscribeNewsletter.mutate({ email, type: 'newsletter' });
+      subscribeNewsletter.mutate({ email, type: "newsletter" });
     }
   };
 
