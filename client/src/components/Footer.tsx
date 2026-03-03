@@ -12,7 +12,6 @@ import {
   Twitter,
 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Link } from "wouter";
 
 function Footer() {
@@ -20,18 +19,8 @@ function Footer() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch services from database with refresh key
-  const servicesQuery = trpc.services.list.useQuery({ _t: refreshKey } as any, {
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    staleTime: 0,
-  }) as any;
+  const servicesQuery = trpc.services.list.useQuery() as any;
   const dbServices = servicesQuery?.data || [];
-
-  // Filter to show only published services (handle both camelCase and lowercase)
-  const publishedServices = dbServices.filter(
-    (service: any) =>
-      service.isPublished !== false && service.ispublished !== false
-  );
 
   // Refresh data when page becomes visible (e.g., after admin update)
   useEffect(() => {
@@ -45,29 +34,18 @@ function Footer() {
       document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
+  // Filter to show only published services (handle both camelCase and lowercase)
+  const publishedServices = dbServices.filter(
+    (service: any) =>
+      service.isPublished !== false && service.ispublished !== false
+  );
+
   const subscribeNewsletter = trpc.leads.subscribeNewsletter.useMutation();
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-<<<<<<< HEAD
-      subscribeNewsletter.mutate(
-        { email, type: "newsletter" },
-        {
-          onSuccess: () => {
-            toast.success("Successfully subscribed to newsletter!");
-            setEmail("");
-          },
-          onError: (error: any) => {
-            toast.error(
-              error?.message || "Failed to subscribe. Please try again."
-            );
-          },
-        }
-      );
-=======
       subscribeNewsletter.mutate({ email, type: "newsletter" });
->>>>>>> 464559c6dbfe0cdd40345581842c066ab3b3ac61
     }
   };
 

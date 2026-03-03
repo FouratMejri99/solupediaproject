@@ -416,6 +416,7 @@ export const servicesService = {
       ),
       ispublished: data.isPublished ?? data.ispublished ?? true,
       image: data.image || null,
+      keyfeatures: data.keyFeatures || data.keyfeatures || null,
     };
     return dbService.insert("services", dbData);
   },
@@ -456,6 +457,7 @@ export const servicesService = {
     if (data.isPublished !== undefined)
       dbData.ispublished = Boolean(data.isPublished);
     if (data.image !== undefined) dbData.image = data.image;
+    if (data.keyFeatures !== undefined) dbData.keyfeatures = data.keyFeatures;
     dbData.updatedat = new Date().toISOString();
     return dbService.update("services", id, dbData);
   },
@@ -654,12 +656,16 @@ export const leadsService = {
 
   async subscribeNewsletter(
     email: string,
-    type: SubscriptionType = "newsletter"
+    type: SubscriptionType = "newsletter",
+    name?: string,
+    company?: string
   ) {
     if (type === "newsletter") {
       // Insert into newsletter table
       const subscriptionData = {
         email,
+        name,
+        company,
       };
       const result = await dbService.insert("newsletter", subscriptionData);
       return result;
@@ -669,6 +675,8 @@ export const leadsService = {
         email,
         type,
         subscribedat: new Date().toISOString(),
+        name,
+        company,
       };
       const result = await dbService.insert(
         "newsletter_subscriptions",

@@ -18,12 +18,8 @@ function Navigation() {
   const [location] = useLocation();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch services from database with refresh key
-  const servicesQuery = trpc.services.list.useQuery({ _t: refreshKey } as any, {
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    staleTime: 0,
-  }) as any;
+  // Fetch services from database
+  const servicesQuery = trpc.services.list.useQuery() as any;
   const dbServices = servicesQuery?.data || [];
   // Filter to show only published services (handle both camelCase and lowercase)
   const publishedServices = dbServices.filter(

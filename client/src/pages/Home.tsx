@@ -403,179 +403,133 @@ export default function Home() {
           </div>
 
           {/* Featured Partnership */}
-          <div className="mb-16">
+          <div className="mb-20">
             <div className="relative max-w-5xl mx-auto">
               <div
-                className="bg-gradient-to-br from-white to-blue-50 
-                  rounded-3xl 
-                  shadow-xl 
-                  border border-blue-100 
-                  p-10 md:p-14 
-                  transition-all duration-300 hover:shadow-2xl"
+                className="bg-white 
+        rounded-3xl 
+        shadow-lg 
+        border border-gray-100 
+        p-10 md:p-14 
+        transition-all duration-300 hover:shadow-xl"
               >
                 {/* Badge */}
-                <div className="flex justify-center mb-8">
+                <div className="mb-6">
                   <span
-                    className="px-4 py-1.5 text-xs font-semibold tracking-widest 
-                       uppercase bg-blue-100 text-blue-700 
-                       rounded-full"
+                    className="inline-block px-4 py-1.5 text-xs font-semibold tracking-widest 
+          uppercase bg-blue-50 text-blue-700 
+          rounded-full"
                   >
                     Featured Partnership
                   </span>
                 </div>
 
-                {/* Logo */}
-                <div className="flex justify-center mb-8">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+                  {/* Left: Company Info */}
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
+                      The Ken Blanchard Companies
+                    </h3>
+                    <div className="w-12 h-1 bg-blue-600 rounded-full mt-4"></div>
+                  </div>
+
+                  {/* Right: Logo */}
                   <img
                     src="/Blanchard_Logo.png"
                     alt="The Ken Blanchard Companies Logo"
-                    className="h-20 md:h-24 object-contain transition-transform duration-300 hover:scale-105"
+                    className="h-9 md:h-10 object-contain opacity-80 grayscale 
+          hover:grayscale-0 hover:opacity-100 
+          transition-all duration-300"
                   />
                 </div>
 
-                {/* Divider */}
-                <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
-
                 {/* Description */}
-                <p className="text-gray-600 text-center leading-relaxed max-w-3xl mx-auto">
+                <p className="text-gray-600 leading-relaxed max-w-3xl">
                   Primary localization engineering partner from{" "}
-                  <span className="font-semibold">2018–2025</span>. Managed
-                  trademark transition, eLearning re-engineering, media
+                  <span className="font-semibold text-gray-800">2018–2025</span>
+                  . Led trademark transition, eLearning re-engineering, media
                   localization, and accessibility compliance across{" "}
-                  <span className="font-semibold">21 languages </span>
+                  <span className="font-semibold text-gray-800">
+                    21 languages
+                  </span>
                   and thousands of assets including{" "}
-                  <span className="font-medium">SLII®</span>,
-                  <span className="font-medium"> Self Leadership</span>, and
-                  more.
+                  <span className="font-medium text-gray-800">SLII®</span>,{" "}
+                  <span className="font-medium text-gray-800">
+                    Self Leadership
+                  </span>
+                  , and enterprise learning systems.
                 </p>
               </div>
             </div>
           </div>
-
           {/* Technology Partners */}
-          <div className="mb-16">
-            <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-8 text-center">
+          <div className="mb-20">
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-10 text-center">
               Technology Partners
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-6">
-              {/* Microsoft */}
-              <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 flex items-center justify-center mb-3">
-                  <img
-                    src="/Microsoft logo.jpg"
-                    alt="Microsoft Logo"
-                    className="w-12 h-12 object-contain"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-gray-900">
-                  Microsoft
-                </span>
-                <span className="text-xs text-gray-500 text-center mt-1">
-                  Storyline & Office Ecosystem
-                </span>
-              </div>
 
-              {/* Adobe */}
-              <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 flex items-center justify-center mb-3">
-                  <img
-                    src="/adobe-creative-cloud.png"
-                    alt="Adobe Logo"
-                    className="w-12 h-12 object-contain"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-gray-900">
-                  Adobe
-                </span>
-                <span className="text-xs text-gray-500 text-center mt-1">
-                  Creative Suite & Content Tools
-                </span>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-8">
+              {/* Reusable Card Style */}
+              {[
+                {
+                  name: "Microsoft",
+                  img: "/Microsoft logo.jpg",
+                  desc: "Storyline & Office Ecosystem",
+                },
+                {
+                  name: "Adobe",
+                  img: "/adobe-creative-cloud.png",
+                  desc: "Creative Suite & Content Tools",
+                },
+                {
+                  name: "Google",
+                  img: "/google.png",
+                  desc: "Cloud Services & Accessibility",
+                },
+                {
+                  name: "MadCap Software",
+                  img: "/madcap.png",
+                  desc: "Flare & Lingo Specialization",
+                },
+                {
+                  name: "Articulate",
+                  img: "/articulate_logo_black.jpeg",
+                  desc: "Storyline & Rise",
+                },
+                {
+                  name: "DominKnow",
+                  img: "/dominknow-logo.png",
+                  desc: "eLearning Authoring",
+                },
+                {
+                  name: "Clip Studio Paint",
+                  img: "/clip-studio-paint.jpg",
+                  desc: "Digital Content Creation",
+                },
+              ].map((partner, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center p-6 rounded-2xl bg-white shadow-sm border border-gray-100 
+        hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className="w-20 h-20 flex items-center justify-center mb-4">
+                    <img
+                      src={partner.img}
+                      alt={`${partner.name} Logo`}
+                      className="w-16 h-16 object-contain"
+                    />
+                  </div>
 
-              {/* Google */}
-              <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 flex items-center justify-center mb-3">
-                  <img
-                    src="/google.png"
-                    alt="Google Logo"
-                    className="w-12 h-12 object-contain"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-gray-900">
-                  Google
-                </span>
-                <span className="text-xs text-gray-500 text-center mt-1">
-                  Cloud Services & Accessibility
-                </span>
-              </div>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {partner.name}
+                  </span>
 
-              {/* MadCap Software */}
-              <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 flex items-center justify-center mb-3">
-                  <img
-                    src="/madcap.png"
-                    alt="MadCap Software Logo"
-                    className="w-12 h-12 object-contain"
-                  />
+                  <span className="text-xs text-gray-500 text-center mt-1 leading-relaxed">
+                    {partner.desc}
+                  </span>
                 </div>
-                <span className="text-sm font-semibold text-gray-900">
-                  MadCap Software
-                </span>
-                <span className="text-xs text-gray-500 text-center mt-1">
-                  Flare & Lingo Specialization
-                </span>
-              </div>
-
-              {/* Articulate */}
-              <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 flex items-center justify-center mb-3">
-                  <img
-                    src="/articulate_logo_black.jpeg"
-                    alt="Articulate Logo"
-                    className="w-12 h-12 object-contain"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-gray-900">
-                  Articulate
-                </span>
-                <span className="text-xs text-gray-500 text-center mt-1">
-                  Storyline & Rise
-                </span>
-              </div>
-
-              {/* DominKnow */}
-              <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 flex items-center justify-center mb-3">
-                  <img
-                    src="/dominknow-logo.png"
-                    alt="DominKnow Logo"
-                    className="w-12 h-12 object-contain"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-gray-900">
-                  DominKnow
-                </span>
-                <span className="text-xs text-gray-500 text-center mt-1">
-                  eLearning Authoring
-                </span>
-              </div>
-
-              {/* Clip Studio Paint */}
-              <div className="flex flex-col items-center p-4 rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 flex items-center justify-center mb-3">
-                  <img
-                    src="/clip-studio-paint.jpg"
-                    alt="Clip Studio Paint Logo"
-                    className="w-12 h-12 object-contain"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-gray-900">
-                  Clip Studio Paint
-                </span>
-                <span className="text-xs text-gray-500 text-center mt-1">
-                  Digital Content Creation
-                </span>
-              </div>
+              ))}
             </div>
           </div>
 

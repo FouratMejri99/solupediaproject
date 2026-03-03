@@ -68,9 +68,7 @@ export default function AdminSubscribers() {
     setNewsletterLoading(true);
     setNewsletterError(null);
     try {
-      const { data, error } = await supabase
-        .from("newsletter")
-        .select("*");
+      const { data, error } = await supabase.from("newsletter").select("*");
 
       if (error) throw error;
       // Sort by created_at descending on client side
@@ -161,7 +159,17 @@ export default function AdminSubscribers() {
           (item.company || "").toLowerCase().includes(search)
         );
       }
-      // For newsletter and guide, search by email
+      // For guide requests, search by fullname, company, email
+      if (activeTab === "guide_requests") {
+        return (
+          (item.fullname || item.full_name || "")
+            .toLowerCase()
+            .includes(search) ||
+          (item.company || "").toLowerCase().includes(search) ||
+          getEmail(item).toLowerCase().includes(search)
+        );
+      }
+      // For newsletter, search by email
       return getEmail(item).toLowerCase().includes(search);
     }
     return true;
@@ -182,20 +190,52 @@ export default function AdminSubscribers() {
         : guideError;
 
   const handleExportCSV = () => {
-    const headers = ["Email", "Subscribed At"];
-    const rows = allSubscribers.map((sub: any) => [
-      getEmail(sub),
-      getSubscribedDate(sub)
-        ? new Date(getSubscribedDate(sub)).toLocaleString()
-        : "-",
-    ]);
+    let headers: string[];
+    let rows: (string | number)[][];
+
+    if (activeTab === "leads") {
+      headers = [
+        "Name",
+        "Email",
+        "Company",
+        "Phone",
+        "Service Interest",
+        "Type",
+        "Message",
+        "Created At",
+      ];
+      rows = allSubscribers.map((sub: any) => [
+        getName(sub),
+        getEmail(sub),
+        getCompany(sub),
+        getPhone(sub),
+        getServiceInterest(sub),
+        getType(sub),
+        getMessage(sub),
+        formatDate(sub.createdat),
+      ]);
+    } else if (activeTab === "guide_requests") {
+      headers = ["Full Name", "Company", "Email", "Subscribed At"];
+      rows = allSubscribers.map((sub: any) => [
+        sub.fullname || sub.full_name || "-",
+        sub.company || "-",
+        getEmail(sub),
+        formatDate(getSubscribedDate(sub)),
+      ]);
+    } else {
+      headers = ["Email", "Subscribed At"];
+      rows = allSubscribers.map((sub: any) => [
+        getEmail(sub),
+        formatDate(getSubscribedDate(sub)),
+      ]);
+    }
 
     const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `newsletter-subscribers-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `${activeTab}-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
   };
 
@@ -432,7 +472,9 @@ export default function AdminSubscribers() {
               placeholder={
                 activeTab === "leads"
                   ? "Search by name, email, or company..."
-                  : "Search by email..."
+                  : activeTab === "guide_requests"
+                    ? "Search by name, company, or email..."
+                    : "Search by email..."
               }
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -495,6 +537,9 @@ export default function AdminSubscribers() {
                           Type
                         </th>
                         <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                          Message
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-600">
                           Created At
                         </th>
                       </tr>
@@ -546,6 +591,12 @@ export default function AdminSubscribers() {
                               {getType(lead)}
                             </span>
                           </td>
+                          <td
+                            className="py-3 px-4 text-sm text-gray-600 max-w-xs truncate"
+                            title={getMessage(lead)}
+                          >
+                            {getMessage(lead)}
+                          </td>
                           <td className="py-3 px-4 text-sm text-gray-600">
                             {formatDate(lead.createdat)}
                           </td>
@@ -558,6 +609,16 @@ export default function AdminSubscribers() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
+                        {activeTab === "guide_requests" ? (
+                          <>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                              Full Name
+                            </th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-600">
+                              Company
+                            </th>
+                          </>
+                        ) : null}
                         <th className="text-left py-3 px-4 font-semibold text-gray-600">
                           Email
                         </th>
@@ -575,6 +636,18 @@ export default function AdminSubscribers() {
                           transition={{ delay: idx * 0.02 }}
                           className="border-b hover:bg-gray-50"
                         >
+                          {activeTab === "guide_requests" ? (
+                            <>
+                              <td className="py-3 px-4 text-sm">
+                                {subscriber.fullname ||
+                                  subscriber.full_name ||
+                                  "-"}
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                {subscriber.company || "-"}
+                              </td>
+                            </>
+                          ) : null}
                           <td className="py-3 px-4">
                             <a
                               href={`mailto:${getEmail(subscriber)}`}

@@ -18,8 +18,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Edit2, Plus, Search, Trash2, Upload, X } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import {
+  ArrowLeft,
+  Edit2,
+  Plus,
+  Search,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Link, useLocation } from "wouter";
 
@@ -38,6 +46,7 @@ export default function AdminServices() {
     orderIndex: 0,
     isPublished: true,
     image: "",
+    keyFeatures: "",
   });
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -74,7 +83,12 @@ export default function AdminServices() {
 
       // Upload new image if selected
       if (selectedImage) {
-        const slug = formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+        const slug =
+          formData.slug ||
+          formData.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
         setIsUploading(true);
         try {
           imageUrl = await uploadImageMutation.mutateAsync({
@@ -97,14 +111,15 @@ export default function AdminServices() {
 
       if (editingService) {
         // Update existing service
-        const oldOrder = editingService.orderIndex || editingService.orderindex || 0;
-        
+        const oldOrder =
+          editingService.orderIndex || editingService.orderindex || 0;
+
         // If order changed, auto-adjust other services
         if (oldOrder !== newOrder && services) {
           for (const s of services as any[]) {
             const sOrder = s.orderIndex || s.orderindex || 0;
             if (s.id === editingService.id) continue;
-            
+
             let newSOrder = sOrder;
             if (newOrder > oldOrder) {
               // Moving down: shift items between old and new position up
@@ -117,7 +132,7 @@ export default function AdminServices() {
                 newSOrder = sOrder + 1;
               }
             }
-            
+
             if (newSOrder !== sOrder) {
               await updateMutation.mutateAsync({
                 id: s.id,
@@ -126,7 +141,7 @@ export default function AdminServices() {
             }
           }
         }
-        
+
         await updateMutation.mutateAsync({
           id: editingService.id,
           updates: { ...formData, image: imageUrl, orderIndex: newOrder },
@@ -202,6 +217,7 @@ export default function AdminServices() {
       orderIndex: 0,
       isPublished: true,
       image: "",
+      keyFeatures: "",
     });
     setEditingService(null);
     setSelectedImage(null);
@@ -234,12 +250,14 @@ export default function AdminServices() {
     setFormData({
       name: service.name || "",
       slug: service.slug || "",
-      shortDescription: service.shortDescription || service.shortdescription || "",
+      shortDescription:
+        service.shortDescription || service.shortdescription || "",
       description: service.description || "",
       icon: service.icon || "BookOpen",
       orderIndex: service.orderIndex || service.orderindex || 0,
-      isPublished: (service.isPublished ?? service.ispublished) ?? true,
+      isPublished: service.isPublished ?? service.ispublished ?? true,
       image: serviceImage,
+      keyFeatures: service.keyFeatures || service.keyfeatures || "",
     });
     setImagePreview(serviceImage);
     setSelectedImage(null);
@@ -398,7 +416,8 @@ export default function AdminServices() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                            Order: {service.orderindex ?? service.orderIndex ?? 0}
+                            Order:{" "}
+                            {service.orderindex ?? service.orderIndex ?? 0}
                           </span>
                         </div>
                         <div className="flex gap-2">
@@ -493,6 +512,22 @@ export default function AdminServices() {
                 placeholder="Detailed description"
                 rows={3}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="keyFeatures">Key Features</Label>
+              <Textarea
+                id="keyFeatures"
+                value={formData.keyFeatures}
+                onChange={e =>
+                  setFormData({ ...formData, keyFeatures: e.target.value })
+                }
+                placeholder="Enter key features, one per line (e.g., Feature 1, Feature 2)"
+                rows={4}
+              />
+              <p className="text-xs text-gray-500">
+                Enter each feature on a new line
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

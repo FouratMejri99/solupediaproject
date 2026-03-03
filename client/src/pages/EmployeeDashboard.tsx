@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
@@ -29,11 +28,34 @@ import { useLocation } from "wouter";
 
 // List of common languages for selection
 const LANGUAGES = [
-  "English", "Spanish", "French", "German", "Italian", "Portuguese",
-  "Dutch", "Russian", "Chinese", "Japanese", "Korean", "Arabic",
-  "Hindi", "Turkish", "Polish", "Swedish", "Danish", "Norwegian",
-  "Finnish", "Czech", "Romanian", "Hungarian", "Greek", "Hebrew",
-  "Thai", "Vietnamese", "Indonesian", "Malay"
+  "English",
+  "Spanish",
+  "French",
+  "German",
+  "Italian",
+  "Portuguese",
+  "Dutch",
+  "Russian",
+  "Chinese",
+  "Japanese",
+  "Korean",
+  "Arabic",
+  "Hindi",
+  "Turkish",
+  "Polish",
+  "Swedish",
+  "Danish",
+  "Norwegian",
+  "Finnish",
+  "Czech",
+  "Romanian",
+  "Hungarian",
+  "Greek",
+  "Hebrew",
+  "Thai",
+  "Vietnamese",
+  "Indonesian",
+  "Malay",
 ];
 
 interface TimeRecord {
@@ -43,7 +65,7 @@ interface TimeRecord {
   projectName?: string;
   taskType: string;
   client?: string;
-  languages: string[];
+  languages: string;
   startTime: string;
   endTime: string;
   duration: number;
@@ -55,6 +77,7 @@ export default function EmployeeDashboard() {
   const [, setLocation] = useLocation();
   const [records, setRecords] = useState<TimeRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -67,9 +90,9 @@ export default function EmployeeDashboard() {
     projectName: "",
     taskType: "translation",
     client: "",
-    languages: [] as string[],
-    startTime: "09:00",
-    endTime: "17:00",
+    languages: "",
+    startTime: "10:00",
+    endTime: "18:00",
     notes: "",
   });
 
@@ -80,9 +103,7 @@ export default function EmployeeDashboard() {
 
   // tRPC query for fetching records
   const { data: dbRecords, refetch: refetchRecords } =
-    trpc.employee.getRecords.useQuery(employeeId || 0, {
-      enabled: !!employeeId,
-    });
+    trpc.employee.getRecords.useQuery(employeeId || 0);
 
   // Refetch data when employeeId changes (e.g., after login)
   useEffect(() => {
@@ -130,7 +151,7 @@ export default function EmployeeDashboard() {
         const projectName = record.projectname || "";
         const taskType = record.tasktype || "";
         const client = record.client || "";
-        const languages = (record.languages || []) as string[];
+        const languages = (record.languages || "") as string;
         const startTime = record.starttime || "";
         const endTime = record.endtime || "";
         const duration = parseFloat(record.duration) || 0;
@@ -144,8 +165,8 @@ export default function EmployeeDashboard() {
           const startMinutes = startHour * 60 + startMin;
           const endMinutes = endHour * 60 + endMin;
 
-          const businessStartMinutes = 9 * 60;
-          const businessEndMinutes = 17 * 60;
+          const businessStartMinutes = 10 * 60; // 10:00 AM
+          const businessEndMinutes = 18 * 60; // 6:00 PM
 
           if (
             startMinutes >= businessEndMinutes ||
@@ -293,7 +314,7 @@ export default function EmployeeDashboard() {
       projectName: formData.projectName,
       taskType: formData.taskType,
       client: formData.client,
-      languages: formData.languages,
+      languages: formData.languages, // store as string
       startTime: startStr,
       endTime: endStr,
       duration,
@@ -311,7 +332,7 @@ export default function EmployeeDashboard() {
           projectName: formData.projectName,
           taskType: formData.taskType,
           client: formData.client,
-          languages: formData.languages.join(", "),
+          languages: formData.languages, // store as string directly
           startTime: startStr,
           endTime: endStr,
           duration,
@@ -353,9 +374,9 @@ export default function EmployeeDashboard() {
 
     const duration = Math.round((durationMinutes / 60) * 100) / 100;
 
-    // Business hours: 9 AM to 5 PM
-    const businessStartMinutes = 9 * 60;
-    const businessEndMinutes = 17 * 60;
+    // Business hours: 10 AM to 6 PM (10:00 to 18:00)
+    const businessStartMinutes = 10 * 60; // 10:00 AM
+    const businessEndMinutes = 18 * 60; // 6:00 PM
 
     let businessDayTime = 0;
     let overtime = 0;
@@ -385,7 +406,7 @@ export default function EmployeeDashboard() {
       projectName: formData.projectName,
       taskType: formData.taskType,
       client: formData.client,
-      languages: formData.languages,
+      languages: formData.languages, // store as string directly
       startTime: formData.startTime,
       endTime: formData.endTime,
       duration,
@@ -403,7 +424,7 @@ export default function EmployeeDashboard() {
           projectName: formData.projectName,
           taskType: formData.taskType,
           client: formData.client,
-          languages: formData.languages.join(", "),
+          languages: formData.languages, // store as string directly
           startTime: formData.startTime,
           endTime: formData.endTime,
           duration,
@@ -428,9 +449,9 @@ export default function EmployeeDashboard() {
       projectName: "",
       taskType: "translation",
       client: "",
-      languages: [] as string[],
-      startTime: "09:00",
-      endTime: "17:00",
+      languages: "",
+      startTime: "10:00",
+      endTime: "18:00",
       notes: "",
     });
   };
@@ -468,15 +489,35 @@ export default function EmployeeDashboard() {
     uniqueDays > 0 ? (totalHours / uniqueDays).toFixed(2) : "0.00";
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
+
+  // Month selection for reports
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().toISOString().split("T")[0].substring(0, 7)
+  );
+  const [selectedYear, setSelectedYear] = useState(
+    new Date().getFullYear().toString()
+  );
+
+  const reportMonth = parseInt(selectedMonth.split("-")[1]);
+  const reportYear = parseInt(selectedMonth.split("-")[0]);
+
   const thisMonthRecords = records.filter(r => {
     const recordDate = new Date(r.workDate);
     return (
-      recordDate.getMonth() === currentMonth &&
-      recordDate.getFullYear() === currentYear
+      recordDate.getMonth() + 1 === reportMonth &&
+      recordDate.getFullYear() === reportYear
     );
   });
   const thisMonthHours = thisMonthRecords.reduce(
     (sum, r) => sum + r.duration,
+    0
+  );
+  const thisMonthBusinessHours = thisMonthRecords.reduce(
+    (sum, r) => sum + r.businessDayTime,
+    0
+  );
+  const thisMonthOvertime = thisMonthRecords.reduce(
+    (sum, r) => sum + r.overtime,
     0
   );
 
@@ -507,6 +548,14 @@ export default function EmployeeDashboard() {
             </div>
             <Button
               variant="outline"
+              onClick={() => setShowReport(!showReport)}
+              className="rounded-full hover:bg-blue-50 hover:text-blue-600 border-gray-200"
+            >
+              <Clock size={18} className="mr-2" />
+              {showReport ? "Hide Report" : "Detailed Report"}
+            </Button>
+            <Button
+              variant="outline"
               onClick={handleLogout}
               className="rounded-full hover:bg-red-50 hover:text-red-600 border-gray-200"
             >
@@ -531,7 +580,7 @@ export default function EmployeeDashboard() {
             {
               title: "Business Hours",
               value: totalBusinessHours.toFixed(2),
-              subtitle: "9 AM - 5 PM",
+              subtitle: "10 AM - 6 PM",
               color: "text-green-600",
             },
             {
@@ -569,6 +618,153 @@ export default function EmployeeDashboard() {
             </motion.div>
           ))}
         </div>
+
+        {/* Detailed Report Section */}
+        {showReport && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-lg rounded-3xl">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Clock size={20} className="text-blue-600" />
+                    Monthly Report
+                  </span>
+                </CardTitle>
+                <CardDescription>
+                  Detailed breakdown of your time for the selected month
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Month Selector */}
+                <div className="mb-6">
+                  <Label htmlFor="reportMonth">Select Month</Label>
+                  <Input
+                    id="reportMonth"
+                    type="month"
+                    value={selectedMonth}
+                    onChange={e => setSelectedMonth(e.target.value)}
+                    className="rounded-xl bg-white/50 max-w-xs"
+                  />
+                </div>
+
+                {/* Monthly Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600">Total Hours</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {thisMonthHours.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600">Business Hours</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {thisMonthBusinessHours.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600">Overtime</p>
+                    <p className="text-2xl font-bold text-orange-600">
+                      {thisMonthOvertime.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600">Days Worked</p>
+                    <p className="text-2xl font-bold text-purple-600">
+                      {new Set(thisMonthRecords.map(r => r.workDate)).size}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Monthly Records Table */}
+                {thisMonthRecords.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-2 font-semibold text-gray-700">
+                            Date
+                          </th>
+                          <th className="text-left py-3 px-2 font-semibold text-gray-700">
+                            Project
+                          </th>
+                          <th className="text-left py-3 px-2 font-semibold text-gray-700">
+                            Task
+                          </th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-700">
+                            Hours
+                          </th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-700">
+                            Business
+                          </th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-700">
+                            Overtime
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {thisMonthRecords
+                          .sort(
+                            (a, b) =>
+                              new Date(b.workDate).getTime() -
+                              new Date(a.workDate).getTime()
+                          )
+                          .map((record, idx) => (
+                            <tr
+                              key={idx}
+                              className="border-b border-gray-100 hover:bg-gray-50"
+                            >
+                              <td className="py-3 px-2">{record.workDate}</td>
+                              <td className="py-3 px-2">
+                                {record.projectName ||
+                                  record.projectNumber ||
+                                  "-"}
+                              </td>
+                              <td className="py-3 px-2 capitalize">
+                                {record.taskType || "-"}
+                              </td>
+                              <td className="py-3 px-2 text-right">
+                                {record.duration.toFixed(2)}
+                              </td>
+                              <td className="py-3 px-2 text-right text-green-600">
+                                {record.businessDayTime.toFixed(2)}
+                              </td>
+                              <td className="py-3 px-2 text-right text-orange-600">
+                                {record.overtime.toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="bg-gray-50 font-semibold">
+                          <td className="py-3 px-2" colSpan={3}>
+                            Total
+                          </td>
+                          <td className="py-3 px-2 text-right">
+                            {thisMonthHours.toFixed(2)}
+                          </td>
+                          <td className="py-3 px-2 text-right text-green-600">
+                            {thisMonthBusinessHours.toFixed(2)}
+                          </td>
+                          <td className="py-3 px-2 text-right text-orange-600">
+                            {thisMonthOvertime.toFixed(2)}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No records found for {selectedMonth}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Additional Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -720,35 +916,20 @@ export default function EmployeeDashboard() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Languages</Label>
-                  <div className="flex flex-wrap gap-1 p-2 bg-white/30 rounded-xl border border-gray-200/30 max-h-24 overflow-y-auto">
-                    {LANGUAGES.map(lang => (
-                      <label
-                        key={lang}
-                        className="flex items-center gap-1 text-xs cursor-pointer hover:bg-white/50 px-2 py-1 rounded border border-gray-200/50"
-                      >
-                        <Checkbox
-                          checked={formData.languages.includes(lang)}
-                          onCheckedChange={checked => {
-                            if (checked) {
-                              setFormData({
-                                ...formData,
-                                languages: [...formData.languages, lang],
-                              });
-                            } else {
-                              setFormData({
-                                ...formData,
-                                languages: formData.languages.filter(
-                                  (l: string) => l !== lang
-                                ),
-                              });
-                            }
-                          }}
-                        />
-                        <span className="text-xs">{lang}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <Label htmlFor="languages">Languages</Label>
+                  <Input
+                    id="languages"
+                    type="text"
+                    placeholder="e.g., English, French, German"
+                    value={formData.languages}
+                    onChange={e =>
+                      setFormData({
+                        ...formData,
+                        languages: e.target.value,
+                      })
+                    }
+                    className="bg-white/50"
+                  />
                 </div>
               </div>
             </CardContent>
@@ -877,35 +1058,20 @@ export default function EmployeeDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Languages</Label>
-                        <div className="flex flex-wrap gap-1 p-2 bg-white/30 rounded-xl border border-gray-200/30 max-h-24 overflow-y-auto">
-                          {LANGUAGES.map(lang => (
-                            <label
-                              key={lang}
-                              className="flex items-center gap-1 text-xs cursor-pointer hover:bg-white/50 px-2 py-1 rounded border border-gray-200/50"
-                            >
-                              <Checkbox
-                                checked={formData.languages.includes(lang)}
-                                onCheckedChange={checked => {
-                                  if (checked) {
-                                    setFormData({
-                                      ...formData,
-                                      languages: [...formData.languages, lang],
-                                    });
-                                  } else {
-                                    setFormData({
-                                      ...formData,
-                                      languages: formData.languages.filter(
-                                        (l: string) => l !== lang
-                                      ),
-                                    });
-                                  }
-                                }}
-                              />
-                              <span className="text-xs">{lang}</span>
-                            </label>
-                          ))}
-                        </div>
+                        <Label htmlFor="languages2">Languages</Label>
+                        <Input
+                          id="languages2"
+                          type="text"
+                          placeholder="e.g., English, French, German"
+                          value={formData.languages}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              languages: e.target.value,
+                            })
+                          }
+                          className="bg-white/50"
+                        />
                       </div>
 
                       <div className="space-y-2">
