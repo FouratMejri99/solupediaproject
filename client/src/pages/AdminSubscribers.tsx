@@ -40,12 +40,15 @@ export default function AdminSubscribers() {
   const [guideLoading, setGuideLoading] = useState(true);
   const [guideError, setGuideError] = useState<string | null>(null);
 
-  // Fetch leads from Supabase
+  // Fetch leads from Supabase (excluding guide_requests)
   const fetchLeadsFromSupabase = async () => {
     setLeadsLoading(true);
     setLeadsError(null);
     try {
-      const { data, error } = await supabase.from("leads").select("*");
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .neq("type", "guide_request");
 
       if (error) throw error;
       // Sort by createdat descending on client side
@@ -159,12 +162,10 @@ export default function AdminSubscribers() {
           (item.company || "").toLowerCase().includes(search)
         );
       }
-      // For guide requests, search by fullname, company, email
+      // For guide requests, search by name, company, email
       if (activeTab === "guide_requests") {
         return (
-          (item.fullname || item.full_name || "")
-            .toLowerCase()
-            .includes(search) ||
+          (item.name || item.fullname || item.full_name ||"").toLowerCase().includes(search) ||
           (item.company || "").toLowerCase().includes(search) ||
           getEmail(item).toLowerCase().includes(search)
         );
@@ -217,7 +218,7 @@ export default function AdminSubscribers() {
     } else if (activeTab === "guide_requests") {
       headers = ["Full Name", "Company", "Email", "Subscribed At"];
       rows = allSubscribers.map((sub: any) => [
-        sub.fullname || sub.full_name || "-",
+        sub.name || sub.fullname || sub.full_name || "-",
         sub.company || "-",
         getEmail(sub),
         formatDate(getSubscribedDate(sub)),
@@ -639,7 +640,8 @@ export default function AdminSubscribers() {
                           {activeTab === "guide_requests" ? (
                             <>
                               <td className="py-3 px-4 text-sm">
-                                {subscriber.fullname ||
+                                {subscriber.name ||
+                                  subscriber.fullname ||
                                   subscriber.full_name ||
                                   "-"}
                               </td>

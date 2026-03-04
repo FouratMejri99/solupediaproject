@@ -1,44 +1,76 @@
 -- Add missing columns to leads table if they don't exist
-DO $$ 
+DO $ 
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'type') THEN
     ALTER TABLE leads ADD COLUMN type TEXT DEFAULT 'lead';
   END IF;
 END
-$$;
+$;
 
-DO $$ 
+DO $ 
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'serviceinterest') THEN
     ALTER TABLE leads ADD COLUMN serviceinterest TEXT;
   END IF;
 END
-$$;
+$;
 
-DO $$ 
+DO $ 
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'createdat') THEN
     ALTER TABLE leads ADD COLUMN createdat TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
 END
-$$;
+$;
+
+DO $
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'name') THEN
+    ALTER TABLE leads ADD COLUMN name TEXT;
+  END IF;
+END
+$;
+
+DO $
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'company') THEN
+    ALTER TABLE leads ADD COLUMN company TEXT;
+  END IF;
+END
+$;
 
 -- Add missing columns to newsletter_subscriptions table if they don't exist
-DO $$ 
+DO $ 
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'newsletter_subscriptions' AND column_name = 'type') THEN
     ALTER TABLE newsletter_subscriptions ADD COLUMN type TEXT DEFAULT 'newsletter';
   END IF;
 END
-$$;
+$;
 
-DO $$ 
+DO $ 
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'newsletter_subscriptions' AND column_name = 'subscribedat') THEN
     ALTER TABLE newsletter_subscriptions ADD COLUMN subscribedat TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
 END
-$$;
+$;
+
+DO $
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'newsletter_subscriptions' AND column_name = 'name') THEN
+    ALTER TABLE newsletter_subscriptions ADD COLUMN name TEXT;
+  END IF;
+END
+$;
+
+DO $
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'newsletter_subscriptions' AND column_name = 'company') THEN
+    ALTER TABLE newsletter_subscriptions ADD COLUMN company TEXT;
+  END IF;
+END
+$;
 
 -- Enable Row Level Security if not enabled
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;

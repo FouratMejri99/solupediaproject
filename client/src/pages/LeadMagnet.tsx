@@ -33,15 +33,6 @@ export default function LeadMagnet() {
         formData.company
       );
 
-      // Also store lead info in leads table for additional details
-      await leadsService.submit({
-        name: formData.name,
-        email: formData.email,
-        company: formData.company,
-        type: "guide_request",
-        message: "Free guide request from landing page",
-      });
-
       toast.success("Thank you! Check your email for the guide.");
       setSubmitted(true);
       setTimeout(() => {
