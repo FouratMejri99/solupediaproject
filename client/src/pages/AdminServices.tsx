@@ -47,6 +47,7 @@ export default function AdminServices() {
     isPublished: true,
     image: "",
     keyFeatures: "",
+    processSteps: "",
   });
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -150,6 +151,7 @@ export default function AdminServices() {
         setShowForm(false);
         resetForm();
         utils.invalidate("services.list");
+        utils.invalidate("services.getBySlug");
         setIsSubmitting(false);
         return;
       }
@@ -185,6 +187,7 @@ export default function AdminServices() {
       setShowForm(false);
       resetForm();
       utils.invalidate("services.list");
+      utils.invalidate("services.getBySlug");
       setIsSubmitting(false);
     } catch (error: any) {
       toast.error(error?.message || "Failed to create service");
@@ -200,6 +203,7 @@ export default function AdminServices() {
       await deleteMutation.mutateAsync(id);
       toast.success("Service deleted successfully!");
       utils.invalidate("services.list");
+      utils.invalidate("services.getBySlug");
       setDeletingId(null);
     } catch (error: any) {
       toast.error(error?.message || "Failed to delete service");
@@ -218,6 +222,7 @@ export default function AdminServices() {
       isPublished: true,
       image: "",
       keyFeatures: "",
+      processSteps: "",
     });
     setEditingService(null);
     setSelectedImage(null);
@@ -258,6 +263,7 @@ export default function AdminServices() {
       isPublished: service.isPublished ?? service.ispublished ?? true,
       image: serviceImage,
       keyFeatures: service.keyFeatures || service.keyfeatures || "",
+      processSteps: service.processSteps || service.processsteps || "",
     });
     setImagePreview(serviceImage);
     setSelectedImage(null);
@@ -313,6 +319,7 @@ export default function AdminServices() {
                     await seedMutation.mutateAsync({});
                     toast.success("Services seeded successfully!");
                     utils.invalidate("services.list");
+                    utils.invalidate("services.getBySlug");
                   } catch (error: any) {
                     toast.error(error?.message || "Failed to seed services");
                   }
@@ -527,6 +534,22 @@ export default function AdminServices() {
               />
               <p className="text-xs text-gray-500">
                 Enter each feature on a new line
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="processSteps">Process Steps</Label>
+              <Textarea
+                id="processSteps"
+                value={formData.processSteps}
+                onChange={e =>
+                  setFormData({ ...formData, processSteps: e.target.value })
+                }
+                placeholder="Enter each step on a new line (e.g., Content Analysis)"
+                rows={4}
+              />
+              <p className="text-xs text-gray-500">
+                Enter each step on a new line
               </p>
             </div>
 

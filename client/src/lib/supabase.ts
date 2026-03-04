@@ -367,6 +367,7 @@ export const caseStudiesService = {
 export const servicesService = {
   async getAll() {
     return dbService.select("services", {
+      select: "id,name,slug,shortdescription,description,icon,orderindex,ispublished,image,keyfeatures,processsteps",
       order: "orderindex",
       ascending: true,
     });
@@ -375,6 +376,7 @@ export const servicesService = {
   async getBySlug(slug: string) {
     const [data] = await dbService.select("services", {
       eq: { slug },
+      select: "id,name,slug,shortdescription,description,icon,orderindex,ispublished,image,keyfeatures,processsteps",
     });
     return data;
   },
@@ -417,6 +419,7 @@ export const servicesService = {
       ispublished: data.isPublished ?? data.ispublished ?? true,
       image: data.image || null,
       keyfeatures: data.keyFeatures || data.keyfeatures || null,
+      processsteps: data.processSteps || data.processsteps || null,
     };
     return dbService.insert("services", dbData);
   },
@@ -458,6 +461,7 @@ export const servicesService = {
       dbData.ispublished = Boolean(data.isPublished);
     if (data.image !== undefined) dbData.image = data.image;
     if (data.keyFeatures !== undefined) dbData.keyfeatures = data.keyFeatures;
+    if (data.processSteps !== undefined) dbData.processsteps = data.processSteps;
     dbData.updatedat = new Date().toISOString();
     return dbService.update("services", id, dbData);
   },
@@ -486,6 +490,8 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
+        keyfeatures: "Storyline development and customization\nDeep technical localization\nInteractive element adaptation\nSCORM compliance and LMS integration\nAccessibility compliance (WCAG)\nMulti-language asset management",
+        processsteps: "Content analysis and technical requirements gathering\nStoryboarding and localization strategy development\nInteractive element development and adaptation\nMultilingual content integration and testing\nSCORM package validation and LMS testing\nQuality assurance and learner experience verification\nDeployment support and ongoing maintenance",
       },
       {
         name: "Media Localization",
@@ -499,6 +505,7 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80",
+        keyfeatures: "Original Sound Track (OST) production\nProfessional subtitling\nVoice-over and dubbing\nAI-assisted translation\nAudio synchronization\nCultural adaptation of visual elements",
       },
       {
         name: "Accessibility",
@@ -512,6 +519,7 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&q=80",
+        keyfeatures: "EAA compliance\nWCAG 2.1 remediation\nSection 508 compliance\nPDF accessibility\nVideo captioning and audio description\nAccessibility testing and auditing",
       },
       {
         name: "Document & DTP",
@@ -525,6 +533,7 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&q=80",
+        keyfeatures: "RTL language support (Arabic, Hebrew, etc.)\nGraphics localization\nTemplate management\nDesktop publishing\nMulti-format output (PDF, Word, etc.)\nFormat preservation",
       },
       {
         name: "Content Creation",
@@ -538,6 +547,7 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80",
+        keyfeatures: "Localization-friendly authoring\nInternationalization consulting\nTerminology management\nStyle guide development\nTranslation memory optimization\nContinuous localization workflow",
       },
       {
         name: "AI Workflows",
@@ -551,6 +561,7 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
+        keyfeatures: "AI-powered translation\nIntelligent content tiering\nMachine translation post-editing\nAI-assisted quality assurance\nPredictive terminology\nAutomated workflow orchestration",
       },
     ];
 
