@@ -605,6 +605,123 @@ const normalizeTestimonial = (item: any) => ({
     "",
 });
 
+// Service Layouts service
+export const serviceLayoutsService = {
+  async getByServiceId(serviceId: number) {
+    return dbService.select("service_layouts", {
+      eq: { service_id: serviceId },
+      select: "id,service_id,section_title,item_number,item_icon,item_title,item_description,order_index,layout_type,sub_items,iconized",
+      order: "order_index",
+      ascending: true,
+    });
+  },
+
+  async create(data: any) {
+    const sanitize = (val: string | null | undefined) => {
+      if (!val || typeof val !== "string") return "";
+      return val
+        .trim()
+        .replace(/<script/gi, "")
+        .replace(/javascript:/gi, "")
+        .replace(/on\w+=/gi, "")
+        .substring(0, 1000);
+    };
+
+    // Handle sub_items - can be array or JSON string
+    let subItems = [];
+    if (data.subItems || data.sub_items) {
+      try {
+        const raw = data.subItems || data.sub_items;
+        subItems = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      } catch (e) {
+        subItems = [];
+      }
+    }
+
+    const dbData = {
+      service_id: Number(data.serviceId) || Number(data.service_id) || 0,
+      section_title: sanitize(data.sectionTitle || data.section_title) || null,
+      item_number: Math.max(1, Math.floor(Number(data.itemNumber || data.item_number || 1))),
+      item_icon: sanitize(data.itemIcon || data.item_icon) || null,
+      item_title: sanitize(data.itemTitle || data.item_title),
+      item_description: sanitize(data.itemDescription || data.item_description) || null,
+      order_index: Math.max(0, Math.floor(Number(data.orderIndex || data.order_index || 0))),
+      layout_type: Math.max(1, Math.min(4, Math.floor(Number(data.layoutType || data.layout_type || 1)))),
+      sub_items: JSON.stringify(subItems),
+      iconized: Boolean(data.iconized),
+    };
+    return dbService.insert("service_layouts", dbData);
+  },
+
+  async update(id: number, data: any) {
+    const sanitize = (val: string | null | undefined) => {
+      if (!val || typeof val !== "string") return undefined;
+      return val
+        .trim()
+        .replace(/<script/gi, "")
+        .replace(/javascript:/gi, "")
+        .replace(/on\w+=/gi, "")
+        .substring(0, 1000);
+    };
+
+    const dbData: any = {};
+    if (data.sectionTitle !== undefined)
+      dbData.section_title = sanitize(data.sectionTitle);
+    if (data.section_title !== undefined)
+      dbData.section_title = sanitize(data.section_title);
+    if (data.itemNumber !== undefined)
+      dbData.item_number = Math.max(1, Math.floor(Number(data.itemNumber)));
+    if (data.item_number !== undefined)
+      dbData.item_number = Math.max(1, Math.floor(Number(data.item_number)));
+    if (data.itemIcon !== undefined)
+      dbData.item_icon = sanitize(data.itemIcon);
+    if (data.item_icon !== undefined)
+      dbData.item_icon = sanitize(data.item_icon);
+    if (data.itemTitle !== undefined)
+      dbData.item_title = sanitize(data.itemTitle);
+    if (data.item_title !== undefined)
+      dbData.item_title = sanitize(data.item_title);
+    if (data.itemDescription !== undefined)
+      dbData.item_description = sanitize(data.itemDescription);
+    if (data.item_description !== undefined)
+      dbData.item_description = sanitize(data.item_description);
+    if (data.orderIndex !== undefined)
+      dbData.order_index = Math.max(0, Math.floor(Number(data.orderIndex)));
+    if (data.order_index !== undefined)
+      dbData.order_index = Math.max(0, Math.floor(Number(data.order_index)));
+    
+    // New layout type fields
+    if (data.layoutType !== undefined)
+      dbData.layout_type = Math.max(1, Math.min(4, Math.floor(Number(data.layoutType))));
+    if (data.layout_type !== undefined)
+      dbData.layout_type = Math.max(1, Math.min(4, Math.floor(Number(data.layout_type))));
+    
+    // Handle sub_items - can be array or JSON string
+    if (data.subItems !== undefined || data.sub_items !== undefined) {
+      let subItems = [];
+      const raw = data.subItems ?? data.sub_items;
+      if (raw) {
+        try {
+          subItems = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        } catch (e) {
+          subItems = [];
+        }
+      }
+      dbData.sub_items = JSON.stringify(subItems);
+    }
+    
+    if (data.iconized !== undefined)
+      dbData.iconized = Boolean(data.iconized);
+
+    dbData.updated_at = new Date().toISOString();
+    return dbService.update("service_layouts", id, dbData);
+  },
+
+  async delete(id: number) {
+    return dbService.delete("service_layouts", id);
+  },
+};
+
 export const testimonialsService = {
   async getAll() {
     const rows = await dbService.select("testimonials", {

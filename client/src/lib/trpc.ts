@@ -11,6 +11,7 @@ import {
   employeeService,
   leadsService,
   servicesService,
+  serviceLayoutsService,
   testimonialsService,
 } from "./supabase";
 
@@ -500,6 +501,31 @@ export const trpc = {
       useMutation: createMutationHook(async (imageUrl: string) => {
         const { storageService } = await import("./supabase");
         return storageService.deleteServiceImage(imageUrl);
+      }),
+    },
+  },
+  serviceLayouts: {
+    list: {
+      useQuery: createParameterizedQueryHook(
+        "serviceLayouts.list",
+        async (serviceId: number) => {
+          return serviceLayoutsService.getByServiceId(serviceId);
+        }
+      ),
+    },
+    create: {
+      useMutation: createMutationHook(async (data: any) => {
+        return serviceLayoutsService.create(data);
+      }),
+    },
+    update: {
+      useMutation: createMutationHook(async (data: { id: number; updates: any }) => {
+        return serviceLayoutsService.update(data.id, data.updates);
+      }),
+    },
+    delete: {
+      useMutation: createMutationHook(async (id: number) => {
+        return serviceLayoutsService.delete(id);
       }),
     },
   },
