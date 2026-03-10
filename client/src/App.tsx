@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Suspense, lazy } from "react";
 import { Route, Switch, useLocation } from "wouter";
+import { ProtectedAdminRoute } from "./_core/hooks/useAdminAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Footer from "./components/Footer";
 import Navigation from "./components/Navigation";
@@ -52,19 +53,63 @@ function Router() {
         <Route path={"/contact"} component={Contact} />
         <Route path={"/industries/:industry"} component={IndustryLanding} />
         <Route path={"/lead-magnet"} component={LeadMagnet} />
-        {/* Admin routes - hidden from public navigation */}
-        <Route path={"/admin/reporting"} component={AdminReporting} />
-        <Route path={"/admin/employees"} component={AdminEmployees} />
-        <Route path={"/solupedia-admin"} component={AdminLogin} />
-        <Route path={"/admin/dashboard"} component={AdminDashboard} />
-        <Route path={"/admin/blog"} component={AdminBlog} />
-        <Route path={"/admin/case-studies"} component={AdminCaseStudies} />
-        <Route path={"/admin/services"} component={AdminServices} />
-        <Route
-          path={"/admin/change-password"}
-          component={AdminChangePassword}
-        />
-        <Route path={"/admin/subscribers"} component={AdminSubscribers} />
+
+        {/* Admin routes - ALL PROTECTED WITH AUTHENTICATION */}
+        {/* Note: /solupedia-admin (login page) is NOT protected */}
+        <Route path="/solupedia-admin">
+          <AdminLogin />
+        </Route>
+
+        {/* Protected Admin Routes - require valid admin session */}
+        <Route path={"/admin/dashboard"}>
+          <ProtectedAdminRoute>
+            <AdminDashboard />
+          </ProtectedAdminRoute>
+        </Route>
+
+        <Route path={"/admin/employees"}>
+          <ProtectedAdminRoute>
+            <AdminEmployees />
+          </ProtectedAdminRoute>
+        </Route>
+
+        <Route path={"/admin/reporting"}>
+          <ProtectedAdminRoute>
+            <AdminReporting />
+          </ProtectedAdminRoute>
+        </Route>
+
+        <Route path={"/admin/blog"}>
+          <ProtectedAdminRoute>
+            <AdminBlog />
+          </ProtectedAdminRoute>
+        </Route>
+
+        <Route path={"/admin/case-studies"}>
+          <ProtectedAdminRoute>
+            <AdminCaseStudies />
+          </ProtectedAdminRoute>
+        </Route>
+
+        <Route path={"/admin/services"}>
+          <ProtectedAdminRoute>
+            <AdminServices />
+          </ProtectedAdminRoute>
+        </Route>
+
+        <Route path={"/admin/change-password"}>
+          <ProtectedAdminRoute>
+            <AdminChangePassword />
+          </ProtectedAdminRoute>
+        </Route>
+
+        <Route path={"/admin/subscribers"}>
+          <ProtectedAdminRoute>
+            <AdminSubscribers />
+          </ProtectedAdminRoute>
+        </Route>
+
+        {/* Employee routes */}
         <Route path={"/employee/login"} component={EmployeeLogin} />
         <Route path={"/employee/dashboard"} component={EmployeeDashboard} />
         <Route path={"/404"} component={NotFound} />

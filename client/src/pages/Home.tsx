@@ -286,35 +286,35 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-blue-900/60 to-transparent"></div>
               </div>
               {/* Floating element */}
-<motion.div
-  animate={{ y: [0, -20, 0] }}
-  transition={{
-    repeat: Infinity,
-    duration: 5,
-    ease: "easeInOut",
-  }}
-  className="absolute -bottom-10 -left-10 z-20 bg-white p-6 rounded-xl shadow-xl max-w-xs"
->
-  <div className="flex items-center gap-4 mb-3">
-    <div className="w-12 h-12  rounded-full flex items-center justify-center">
-      <img
-        src="/world-glob.png"
-        alt="Global Reach"
-        className="w-6 h-6 object-contain"
-      />
-    </div>
-    <div>
-      <p className="font-bold text-gray-900">Global Reach</p>
-      <p className="text-sm text-gray-500">Connecting cultures</p>
-    </div>
-  </div>
-  <div className="flex items-center gap-2">
-    <Award className="w-5 h-5 text-yellow-500" />
-    <span className="text-sm text-gray-600 font-medium">
-      Trusted by leaders
-    </span>
-  </div>
-</motion.div>
+              <motion.div
+                animate={{ y: [0, -20, 0] }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 5,
+                  ease: "easeInOut",
+                }}
+                className="absolute -bottom-10 -left-10 z-20 bg-white p-6 rounded-xl shadow-xl max-w-xs"
+              >
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12  rounded-full flex items-center justify-center">
+                    <img
+                      src="/world-glob.png"
+                      alt="Global Reach"
+                      className="w-6 h-6 object-contain"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">Global Reach</p>
+                    <p className="text-sm text-gray-500">Connecting cultures</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-yellow-500" />
+                  <span className="text-sm text-gray-600 font-medium">
+                    Trusted by leaders
+                  </span>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -474,7 +474,6 @@ export default function Home() {
             </p>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-8">
-              {/* Reusable Card Style */}
               {[
                 {
                   name: "Microsoft",
@@ -483,7 +482,7 @@ export default function Home() {
                 },
                 {
                   name: "Adobe",
-                  img: "/adobe-creative-cloud.png",
+                  img: "/adobe.png",
                   desc: "Creative Suite & Content Tools",
                 },
                 {
@@ -515,20 +514,23 @@ export default function Home() {
                 <div
                   key={index}
                   className="flex flex-col items-center p-6 rounded-2xl bg-white shadow-sm border border-gray-100 
-        hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+      hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                 >
-                  <div className="w-20 h-20 flex items-center justify-center mb-4">
+                  {/* Logo Container */}
+                  <div className="w-30 h-25 flex items-center justify-center mb-4 p-2">
                     <img
                       src={partner.img}
                       alt={`${partner.name} Logo`}
-                      className="w-16 h-16 object-contain"
+                      className="w-full h-full object-contain"
                     />
                   </div>
 
-                  <span className="text-sm font-semibold text-gray-900">
+                  {/* Name */}
+                  <span className="text-sm font-semibold text-gray-900 text-center">
                     {partner.name}
                   </span>
 
+                  {/* Description */}
                   <span className="text-xs text-gray-500 text-center mt-1 leading-relaxed">
                     {partner.desc}
                   </span>
