@@ -10,8 +10,8 @@ import {
   caseStudiesService,
   employeeService,
   leadsService,
-  servicesService,
   serviceLayoutsService,
+  servicesService,
   testimonialsService,
 } from "./supabase";
 
@@ -318,6 +318,16 @@ export const trpc = {
         }
       ),
     },
+    getDetailedDailyReport: {
+      useQuery: createParameterizedQueryHook(
+        async (params: { startDate: string; endDate: string }) => {
+          return adminService.getDetailedDailyReport(
+            params.startDate,
+            params.endDate
+          );
+        }
+      ),
+    },
     getDailyReportSummary: {
       useQuery: createParameterizedQueryHook(
         async (params: { startDate: string; endDate: string }) => {
@@ -519,9 +529,11 @@ export const trpc = {
       }),
     },
     update: {
-      useMutation: createMutationHook(async (data: { id: number; updates: any }) => {
-        return serviceLayoutsService.update(data.id, data.updates);
-      }),
+      useMutation: createMutationHook(
+        async (data: { id: number; updates: any }) => {
+          return serviceLayoutsService.update(data.id, data.updates);
+        }
+      ),
     },
     delete: {
       useMutation: createMutationHook(async (id: number) => {

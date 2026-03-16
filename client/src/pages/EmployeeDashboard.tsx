@@ -157,9 +157,13 @@ export default function EmployeeDashboard() {
         const duration = parseFloat(record.duration) || 0;
 
         // Recompute business hours and overtime on the fly from start/end
+        // Time Off entries don't count as business hours or overtime
         let businessDayTime = 0;
         let overtime = 0;
-        if (startTime && endTime) {
+        if (taskType === "time_off") {
+          businessDayTime = 0;
+          overtime = 0;
+        } else if (startTime && endTime) {
           const [startHour, startMin] = startTime.split(":").map(Number);
           const [endHour, endMin] = endTime.split(":").map(Number);
           const startMinutes = startHour * 60 + startMin;
@@ -289,7 +293,12 @@ export default function EmployeeDashboard() {
     const businessEndMinutes = 17 * 60;
     let businessDayTime = 0;
     let overtime = 0;
-    if (
+
+    // Time Off entries don't count as business hours or overtime
+    if (formData.taskType === "time_off") {
+      businessDayTime = 0;
+      overtime = 0;
+    } else if (
       startMinutes >= businessEndMinutes ||
       endMinutes <= businessStartMinutes
     ) {
@@ -381,7 +390,11 @@ export default function EmployeeDashboard() {
     let businessDayTime = 0;
     let overtime = 0;
 
-    if (
+    // Time Off entries don't count as business hours or overtime
+    if (formData.taskType === "time_off") {
+      businessDayTime = 0;
+      overtime = 0;
+    } else if (
       startMinutes >= businessEndMinutes ||
       endMinutes <= businessStartMinutes
     ) {
@@ -873,6 +886,7 @@ export default function EmployeeDashboard() {
                     </option>
                     <option value="voiceover">Voice Over</option>
                     <option value="subtitle">Subtitle</option>
+                    <option value="time_off">Time Off</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
@@ -1008,6 +1022,7 @@ export default function EmployeeDashboard() {
                           </option>
                           <option value="voiceover">Voice Over</option>
                           <option value="subtitle">Subtitle</option>
+                          <option value="time_off">Time Off</option>
                           <option value="other">Other</option>
                         </select>
                       </div>

@@ -9,10 +9,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { ArrowLeft, Download, Filter, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  Download,
+  Filter,
+  RefreshCw,
+  Users,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Bar,
@@ -48,6 +59,20 @@ interface DailyReport {
   totalHours: number;
   employeeCount: number;
   overtimeHours: number;
+}
+
+interface DailyEmployeeDetail {
+  employeeId: number;
+  employeeName: string;
+  hours: number;
+  overtimeHours: number;
+  taskType: string;
+  projectName: string;
+}
+
+interface DailyReportWithDetails extends DailyReport {
+  employees: DailyEmployeeDetail[];
+  avgHoursPerEmployee: number;
 }
 
 interface TaskTypeData {
@@ -97,18 +122,53 @@ export default function AdminReporting() {
   const [selectedYear, setSelectedYear] = useState(
     new Date().getFullYear().toString()
   );
+  const [selectedDay, setSelectedDay] = useState<string>("");
+  const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+  const [employees, setEmployees] = useState<
+    { id: number; firstName: string; lastName: string }[]
+  >([]);
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const [showDailyDetails, setShowDailyDetails] = useState(true);
+
+  // Fetch employees on mount
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const { adminService } = await import("@/lib/supabase");
+        const empList = await adminService.getAllEmployees();
+        setEmployees(empList);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployees();
+  }, []);
+
+  const toggleDayExpansion = (date: string) => {
+    setExpandedDays(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(date)) {
+        newSet.delete(date);
+      } else {
+        newSet.add(date);
+      }
+      return newSet;
+    });
+  };
 
   const year = parseInt(selectedYear);
   const month = parseInt(selectedMonth.split("-")[1]);
+  const day = selectedDay ? parseInt(selectedDay) : null;
+
   const startDate = new Date(
     parseInt(selectedMonth.split("-")[0]),
     parseInt(selectedMonth.split("-")[1]) - 1,
-    1
+    day || 1
   );
   const endDate = new Date(
     parseInt(selectedMonth.split("-")[0]),
     parseInt(selectedMonth.split("-")[1]),
-    0
+    day || 0
   );
 
   // Seed sample data mutation
@@ -147,6 +207,19 @@ export default function AdminReporting() {
       {
         refetchOnWindowFocus: false,
         refetchInterval: 30000, // Auto-refresh every 30 seconds
+      }
+    );
+
+  // Fetch detailed daily report with employee breakdown
+  const { data: detailedDailyReports, isLoading: loadingDetailedDaily } =
+    trpc.admin.getDetailedDailyReport.useQuery(
+      {
+        startDate: startDate.toISOString().split("T")[0],
+        endDate: endDate.toISOString().split("T")[0],
+      },
+      {
+        refetchOnWindowFocus: false,
+        refetchInterval: 30000,
       }
     );
 
@@ -208,19 +281,47 @@ export default function AdminReporting() {
       color: TASK_COLORS[task.taskType] || TASK_COLORS["Other"],
     })) || [];
 
-  // Calculate summary stats
-  const totalHours = employeeReports.reduce(
+  // Filter data by selected employee
+  const selectedEmployeeId = selectedEmployee
+    ? parseInt(selectedEmployee)
+    : null;
+
+  // Filter monthly summary by employee
+  const filteredEmployeeReports = selectedEmployeeId
+    ? employeeReports.filter(emp => emp.employeeId === selectedEmployeeId)
+    : employeeReports;
+
+  // Calculate filtered stats
+  const totalHours = filteredEmployeeReports.reduce(
     (sum, emp) => sum + emp.totalHours,
     0
   );
-  const totalOvertime = employeeReports.reduce(
+  const totalOvertime = filteredEmployeeReports.reduce(
     (sum, emp) => sum + emp.overtimeHours,
     0
   );
   const averageHours =
-    employeeReports.length > 0
-      ? Math.round((totalHours / employeeReports.length) * 100) / 100
+    filteredEmployeeReports.length > 0
+      ? Math.round((totalHours / filteredEmployeeReports.length) * 100) / 100
       : 0;
+
+  // Filter detailed daily reports by employee
+  const filteredDetailedReports =
+    detailedDailyReports?.map((day: any) => {
+      if (!selectedEmployeeId) return day;
+      return {
+        ...day,
+        employees: day.employees.filter(
+          (emp: any) => emp.employeeId === selectedEmployeeId
+        ),
+        totalHours: day.employees
+          .filter((emp: any) => emp.employeeId === selectedEmployeeId)
+          .reduce((sum: number, emp: any) => sum + emp.hours, 0),
+        employeeCount: day.employees.filter(
+          (emp: any) => emp.employeeId === selectedEmployeeId
+        ).length,
+      };
+    }) || [];
 
   const handleExportReport = () => {
     const doc = new jsPDF();
@@ -322,7 +423,8 @@ export default function AdminReporting() {
   };
 
   // Show loading state
-  const isLoading = loadingSummary || loadingDaily || loadingTask;
+  const isLoading =
+    loadingSummary || loadingDaily || loadingTask || loadingDetailedDaily;
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
@@ -405,18 +507,7 @@ export default function AdminReporting() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="month">Month</Label>
-                  <Input
-                    id="month"
-                    type="month"
-                    value={selectedMonth}
-                    onChange={e => setSelectedMonth(e.target.value)}
-                    className="rounded-xl bg-white/50"
-                  />
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="year">Year</Label>
                   <Input
@@ -429,6 +520,101 @@ export default function AdminReporting() {
                     className="rounded-xl bg-white/50"
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="month">Month</Label>
+                  <Input
+                    id="month"
+                    type="month"
+                    value={selectedMonth}
+                    onChange={e => {
+                      setSelectedMonth(e.target.value);
+                      setSelectedDay(""); // Reset day when month changes
+                    }}
+                    className="rounded-xl bg-white/50"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="day">Specific Day (Optional)</Label>
+                  <Input
+                    id="day"
+                    type="number"
+                    placeholder="All days"
+                    value={selectedDay}
+                    onChange={e => setSelectedDay(e.target.value)}
+                    min="1"
+                    max="31"
+                    className="rounded-xl bg-white/50"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="employee">Employee (Optional)</Label>
+                  <select
+                    id="employee"
+                    value={selectedEmployee}
+                    onChange={e => setSelectedEmployee(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 h-10"
+                  >
+                    <option value="">All Employees</option>
+                    {employees.map(emp => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.firstName} {emp.lastName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Quick Filter Buttons */}
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="text-sm text-gray-500 mr-2">
+                  Quick filters:
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedDay("");
+                    setSelectedMonth(
+                      new Date().toISOString().split("T")[0].substring(0, 7)
+                    );
+                  }}
+                  className="rounded-full text-xs"
+                >
+                  This Month
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const lastMonth = new Date();
+                    lastMonth.setMonth(lastMonth.getMonth() - 1);
+                    setSelectedMonth(
+                      lastMonth.toISOString().split("T")[0].substring(0, 7)
+                    );
+                    setSelectedDay("");
+                  }}
+                  className="rounded-full text-xs"
+                >
+                  Last Month
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedMonth(
+                      new Date().toISOString().split("T")[0].substring(0, 7)
+                    );
+                    setSelectedDay(
+                      new Date().toISOString().split("T")[0].split("-")[2]
+                    );
+                  }}
+                  className="rounded-full text-xs"
+                >
+                  Today
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -454,8 +640,10 @@ export default function AdminReporting() {
                 },
                 {
                   title: "Employees",
-                  value: employeeReports.length,
-                  subtitle: "Active employees",
+                  value: filteredEmployeeReports.length,
+                  subtitle: selectedEmployee
+                    ? "Selected employee"
+                    : "Active employees",
                   color: "text-green-600",
                 },
                 {
@@ -623,13 +811,15 @@ export default function AdminReporting() {
                 <CardHeader>
                   <CardTitle>Employee Hours Comparison</CardTitle>
                   <CardDescription>
-                    Business hours vs overtime by employee
+                    {selectedEmployee
+                      ? "Selected employee hours"
+                      : "Business hours vs overtime by employee"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {employeeReports.length > 0 ? (
+                  {filteredEmployeeReports.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={employeeReports}>
+                      <BarChart data={filteredEmployeeReports}>
                         <CartesianGrid
                           strokeDasharray="3 3"
                           stroke="#e5e7eb"
@@ -673,6 +863,206 @@ export default function AdminReporting() {
               </Card>
             </motion.div>
 
+            {/* Detailed Daily Breakdown Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.45 }}
+            >
+              <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-lg rounded-3xl overflow-hidden mb-8">
+                <CardHeader className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border-b border-blue-100/50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar size={20} className="text-blue-600" />
+                        Daily Detailed Breakdown
+                      </CardTitle>
+                      <CardDescription>
+                        Expand each day to see employee-level details
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">
+                        {filteredDetailedReports?.length || 0} days with data
+                      </span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {filteredDetailedReports &&
+                  filteredDetailedReports.length > 0 ? (
+                    <div className="divide-y divide-gray-100">
+                      {filteredDetailedReports.map((day, idx) => {
+                        const isExpanded = expandedDays.has(day.date);
+                        const formattedDate = new Date(
+                          day.date
+                        ).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                        });
+
+                        return (
+                          <motion.div
+                            key={day.date}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: idx * 0.02 }}
+                          >
+                            {/* Day Header Row */}
+                            <div
+                              className="flex items-center justify-between p-4 hover:bg-blue-50/30 cursor-pointer transition-colors"
+                              onClick={() => toggleDayExpansion(day.date)}
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                  {isExpanded ? (
+                                    <ChevronDown
+                                      size={16}
+                                      className="text-blue-600"
+                                    />
+                                  ) : (
+                                    <ChevronRight
+                                      size={16}
+                                      className="text-blue-600"
+                                    />
+                                  )}
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-gray-900">
+                                    {formattedDate}
+                                  </span>
+                                  <span className="ml-2 text-sm text-gray-500">
+                                    {new Date(day.date).toLocaleDateString(
+                                      "en-US",
+                                      { year: "numeric" }
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-8">
+                                <div className="flex items-center gap-2">
+                                  <Clock size={14} className="text-gray-400" />
+                                  <span className="text-sm">
+                                    <span className="font-medium text-gray-900">
+                                      {day.totalHours.toFixed(1)}h
+                                    </span>
+                                    <span className="text-gray-500">
+                                      {" "}
+                                      total
+                                    </span>
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Zap size={14} className="text-orange-400" />
+                                  <span className="text-sm">
+                                    <span className="font-medium text-orange-600">
+                                      {day.overtimeHours.toFixed(1)}h
+                                    </span>
+                                    <span className="text-gray-500"> OT</span>
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Users size={14} className="text-gray-400" />
+                                  <span className="text-sm">
+                                    <span className="font-medium text-gray-900">
+                                      {day.employeeCount}
+                                    </span>
+                                    <span className="text-gray-500">
+                                      {" "}
+                                      employees
+                                    </span>
+                                  </span>
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  <span className="font-medium text-gray-700">
+                                    {day.avgHoursPerEmployee.toFixed(1)}h
+                                  </span>
+                                  /emp
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Expanded Employee Details */}
+                            <AnimatePresence>
+                              {isExpanded &&
+                                day.employees &&
+                                day.employees.length > 0 && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="bg-gray-50/50 p-4 pl-16 pr-4">
+                                      <table className="w-full">
+                                        <thead>
+                                          <tr className="text-xs text-gray-500 border-b border-gray-200">
+                                            <th className="text-left py-2 font-medium">
+                                              Employee
+                                            </th>
+                                            <th className="text-right py-2 font-medium">
+                                              Hours
+                                            </th>
+                                            <th className="text-right py-2 font-medium">
+                                              Overtime
+                                            </th>
+                                            <th className="text-left py-2 font-medium">
+                                              Task Type
+                                            </th>
+                                            <th className="text-left py-2 font-medium">
+                                              Project
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {day.employees.map((emp, empIdx) => (
+                                            <tr
+                                              key={empIdx}
+                                              className="border-b border-gray-100 last:border-0"
+                                            >
+                                              <td className="py-2">
+                                                <span className="font-medium text-gray-900">
+                                                  {emp.employeeName}
+                                                </span>
+                                              </td>
+                                              <td className="text-right py-2 text-gray-700">
+                                                {emp.hours.toFixed(1)}h
+                                              </td>
+                                              <td className="text-right py-2 text-orange-600">
+                                                {emp.overtimeHours.toFixed(1)}h
+                                              </td>
+                                              <td className="py-2">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                  {emp.taskType}
+                                                </span>
+                                              </td>
+                                              <td className="py-2 text-gray-600">
+                                                {emp.projectName}
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center py-12 text-gray-500">
+                      No detailed daily data available for this period
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
             {/* Employee Details Table */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -681,13 +1071,17 @@ export default function AdminReporting() {
             >
               <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-lg rounded-3xl overflow-hidden">
                 <CardHeader className="bg-blue-50/50 border-b border-blue-100/50">
-                  <CardTitle>Employee Details</CardTitle>
+                  <CardTitle>
+                    {selectedEmployee ? "Employee Details" : "Employee Details"}
+                  </CardTitle>
                   <CardDescription>
-                    Detailed breakdown by employee
+                    {selectedEmployee
+                      ? "Selected employee breakdown"
+                      : "Detailed breakdown by employee"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                  {employeeReports.length > 0 ? (
+                  {filteredEmployeeReports.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
@@ -713,7 +1107,7 @@ export default function AdminReporting() {
                           </tr>
                         </thead>
                         <tbody>
-                          {employeeReports.map((emp, idx) => (
+                          {filteredEmployeeReports.map((emp, idx) => (
                             <motion.tr
                               key={emp.employeeId}
                               className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors"

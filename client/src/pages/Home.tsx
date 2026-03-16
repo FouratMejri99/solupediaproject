@@ -279,7 +279,7 @@ export default function Home() {
             >
               <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/50 border-4 border-white/10">
                 <img
-                  src="/QRRik675gBAy.webp"
+                  src="/home.webp"
                   alt="Global Business Languages"
                   className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
                 />

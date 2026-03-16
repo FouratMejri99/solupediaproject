@@ -20,7 +20,6 @@ export default function ServiceDetail() {
   const queryResult = trpc.services.getBySlug.useQuery(slug) as any;
   const dbService = queryResult?.data;
   const isLoading = queryResult?.isLoading;
-  const refetch = queryResult?.refetch;
 
   const [layouts, setLayouts] = useState<any[]>([]);
 
@@ -150,7 +149,6 @@ export default function ServiceDetail() {
                 className="flex items-start gap-4 p-6 bg-white border rounded-xl shadow-sm hover:shadow-md transition"
               >
                 <CheckCircle className="text-blue-600 mt-1" />
-
                 <p className="text-gray-700">{benefit}</p>
               </motion.div>
             ))}
@@ -168,32 +166,189 @@ export default function ServiceDetail() {
               </h2>
             )}
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {section.items.map((item: any, idx: number) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-white border rounded-xl p-6 text-center hover:shadow-lg transition"
-                >
-                  <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold">
-                    {item.item_number || idx + 1}
-                  </div>
+            {/* LAYOUT 1 */}
+            {section.layoutType === 1 && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {section.items.map((item: any, idx: number) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    viewport={{ once: true }}
+                    className="bg-white border rounded-xl p-6 text-center hover:shadow-lg transition"
+                  >
+                    <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold">
+                      {item.item_number || idx + 1}
+                    </div>
 
-                  <h3 className="font-semibold text-lg mb-2">
-                    {item.item_title}
-                  </h3>
+                    <h3 className="font-semibold text-lg mb-2">
+                      {item.item_title}
+                    </h3>
 
-                  {item.item_description && (
-                    <p className="text-gray-600 text-sm">
-                      {item.item_description}
-                    </p>
-                  )}
-                </motion.div>
-              ))}
-            </div>
+                    {item.item_description && (
+                      <p className="text-gray-600 text-sm">
+                        {item.item_description}
+                      </p>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {/* LAYOUT 2 FIXED */}
+            {section.layoutType === 2 && (
+              <div className="grid grid-cols-1 gap-4">
+                {section.items.map((item: any, idx: number) => {
+                  const subItems =
+                    typeof item.sub_items === "string"
+                      ? JSON.parse(item.sub_items)
+                      : item.sub_items || [];
+
+                  return (
+                    <div
+                      key={idx}
+                      className="bg-gradient-to-r from-blue-50 to-white border-l-4 border-blue-500 rounded-lg p-5 hover:shadow-md transition"
+                    >
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full font-bold">
+                          {item.item_number || idx + 1}
+                        </div>
+
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">
+                            {item.item_title}
+                          </h3>
+
+                          {item.item_description && (
+                            <p className="text-gray-600 text-sm mt-1">
+                              {item.item_description}
+                            </p>
+                          )}
+
+                          {subItems.length > 0 && (
+                            <ul className="mt-3 space-y-1">
+                              {subItems.map((sub: string, subIdx: number) => (
+                                <li
+                                  key={subIdx}
+                                  className="text-gray-600 text-sm flex gap-2"
+                                >
+                                  <span className="text-blue-500">•</span>
+                                  {sub}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* LAYOUT 3 */}
+            {section.layoutType === 3 && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {section.items.map((item: any, idx: number) => {
+                  const subItems =
+                    typeof item.sub_items === "string"
+                      ? JSON.parse(item.sub_items)
+                      : item.sub_items || [];
+
+                  return (
+                    <div
+                      key={idx}
+                      className="flex gap-3 p-4 border rounded-xl bg-white hover:shadow-md transition"
+                    >
+                      <CheckCircle className="text-blue-600 mt-1 flex-shrink-0" />
+
+                      <div>
+                        <h3 className="font-semibold text-gray-900">
+                          {item.item_title}
+                        </h3>
+
+                        {item.item_description && (
+                          <p className="text-gray-600 text-sm mb-2">
+                            {item.item_description}
+                          </p>
+                        )}
+
+                        {subItems.length > 0 && (
+                          <ul className="space-y-1">
+                            {subItems.map((sub: string, subIdx: number) => (
+                              <li
+                                key={subIdx}
+                                className="text-gray-600 text-sm flex gap-2"
+                              >
+                                <span className="text-blue-500">•</span>
+                                {sub}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* LAYOUT 4 */}
+            {/* LAYOUT 4 - IMPROVED */}
+            {/* LAYOUT 4 */}
+            {section.layoutType === 4 && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {section.items.map((item: any, idx: number) => {
+                  const subItems =
+                    typeof item.sub_items === "string"
+                      ? JSON.parse(item.sub_items)
+                      : item.sub_items || [];
+
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 25 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      viewport={{ once: true }}
+                      className="bg-white border rounded-2xl p-8 hover:shadow-xl transition"
+                    >
+                      {/* ICON + TITLE SAME LINE */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                          <CheckCircle size={20} />
+                        </div>
+
+                        <h3 className="font-bold text-lg text-gray-900">
+                          {item.item_title}
+                        </h3>
+                      </div>
+
+                      {item.item_description && (
+                        <p className="text-gray-600 text-sm mb-4">
+                          {item.item_description}
+                        </p>
+                      )}
+
+                      {subItems.length > 0 && (
+                        <ul className="space-y-2">
+                          {subItems.map((sub: string, subIdx: number) => (
+                            <li
+                              key={subIdx}
+                              className="flex items-start gap-2 text-gray-600 text-sm"
+                            >
+                              <span className="text-blue-500">•</span>
+                              {sub}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
       ))}

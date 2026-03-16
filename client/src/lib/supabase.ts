@@ -367,7 +367,8 @@ export const caseStudiesService = {
 export const servicesService = {
   async getAll() {
     return dbService.select("services", {
-      select: "id,name,slug,shortdescription,description,icon,orderindex,ispublished,image,keyfeatures,processsteps",
+      select:
+        "id,name,slug,shortdescription,description,icon,orderindex,ispublished,image,keyfeatures,processsteps",
       order: "orderindex",
       ascending: true,
     });
@@ -376,7 +377,8 @@ export const servicesService = {
   async getBySlug(slug: string) {
     const [data] = await dbService.select("services", {
       eq: { slug },
-      select: "id,name,slug,shortdescription,description,icon,orderindex,ispublished,image,keyfeatures,processsteps",
+      select:
+        "id,name,slug,shortdescription,description,icon,orderindex,ispublished,image,keyfeatures,processsteps",
     });
     return data;
   },
@@ -461,7 +463,8 @@ export const servicesService = {
       dbData.ispublished = Boolean(data.isPublished);
     if (data.image !== undefined) dbData.image = data.image;
     if (data.keyFeatures !== undefined) dbData.keyfeatures = data.keyFeatures;
-    if (data.processSteps !== undefined) dbData.processsteps = data.processSteps;
+    if (data.processSteps !== undefined)
+      dbData.processsteps = data.processSteps;
     dbData.updatedat = new Date().toISOString();
     return dbService.update("services", id, dbData);
   },
@@ -490,8 +493,10 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
-        keyfeatures: "Storyline development and customization\nDeep technical localization\nInteractive element adaptation\nSCORM compliance and LMS integration\nAccessibility compliance (WCAG)\nMulti-language asset management",
-        processsteps: "Content analysis and technical requirements gathering\nStoryboarding and localization strategy development\nInteractive element development and adaptation\nMultilingual content integration and testing\nSCORM package validation and LMS testing\nQuality assurance and learner experience verification\nDeployment support and ongoing maintenance",
+        keyfeatures:
+          "Storyline development and customization\nDeep technical localization\nInteractive element adaptation\nSCORM compliance and LMS integration\nAccessibility compliance (WCAG)\nMulti-language asset management",
+        processsteps:
+          "Content analysis and technical requirements gathering\nStoryboarding and localization strategy development\nInteractive element development and adaptation\nMultilingual content integration and testing\nSCORM package validation and LMS testing\nQuality assurance and learner experience verification\nDeployment support and ongoing maintenance",
       },
       {
         name: "Media Localization",
@@ -505,7 +510,8 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80",
-        keyfeatures: "Original Sound Track (OST) production\nProfessional subtitling\nVoice-over and dubbing\nAI-assisted translation\nAudio synchronization\nCultural adaptation of visual elements",
+        keyfeatures:
+          "Original Sound Track (OST) production\nProfessional subtitling\nVoice-over and dubbing\nAI-assisted translation\nAudio synchronization\nCultural adaptation of visual elements",
       },
       {
         name: "Accessibility",
@@ -519,7 +525,8 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&q=80",
-        keyfeatures: "EAA compliance\nWCAG 2.1 remediation\nSection 508 compliance\nPDF accessibility\nVideo captioning and audio description\nAccessibility testing and auditing",
+        keyfeatures:
+          "EAA compliance\nWCAG 2.1 remediation\nSection 508 compliance\nPDF accessibility\nVideo captioning and audio description\nAccessibility testing and auditing",
       },
       {
         name: "Document & DTP",
@@ -533,7 +540,8 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&q=80",
-        keyfeatures: "RTL language support (Arabic, Hebrew, etc.)\nGraphics localization\nTemplate management\nDesktop publishing\nMulti-format output (PDF, Word, etc.)\nFormat preservation",
+        keyfeatures:
+          "RTL language support (Arabic, Hebrew, etc.)\nGraphics localization\nTemplate management\nDesktop publishing\nMulti-format output (PDF, Word, etc.)\nFormat preservation",
       },
       {
         name: "Content Creation",
@@ -547,7 +555,8 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80",
-        keyfeatures: "Localization-friendly authoring\nInternationalization consulting\nTerminology management\nStyle guide development\nTranslation memory optimization\nContinuous localization workflow",
+        keyfeatures:
+          "Localization-friendly authoring\nInternationalization consulting\nTerminology management\nStyle guide development\nTranslation memory optimization\nContinuous localization workflow",
       },
       {
         name: "AI Workflows",
@@ -561,7 +570,8 @@ export const servicesService = {
         ispublished: true,
         image:
           "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
-        keyfeatures: "AI-powered translation\nIntelligent content tiering\nMachine translation post-editing\nAI-assisted quality assurance\nPredictive terminology\nAutomated workflow orchestration",
+        keyfeatures:
+          "AI-powered translation\nIntelligent content tiering\nMachine translation post-editing\nAI-assisted quality assurance\nPredictive terminology\nAutomated workflow orchestration",
       },
     ];
 
@@ -610,7 +620,8 @@ export const serviceLayoutsService = {
   async getByServiceId(serviceId: number) {
     return dbService.select("service_layouts", {
       eq: { service_id: serviceId },
-      select: "id,service_id,section_title,item_number,item_icon,item_title,item_description,order_index,layout_type,sub_items,iconized",
+      select:
+        "id,service_id,section_title,item_number,item_icon,item_title,item_description,order_index,layout_type,sub_items,iconized",
       order: "order_index",
       ascending: true,
     });
@@ -632,7 +643,7 @@ export const serviceLayoutsService = {
     if (data.subItems || data.sub_items) {
       try {
         const raw = data.subItems || data.sub_items;
-        subItems = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        subItems = typeof raw === "string" ? JSON.parse(raw) : raw;
       } catch (e) {
         subItems = [];
       }
@@ -641,12 +652,25 @@ export const serviceLayoutsService = {
     const dbData = {
       service_id: Number(data.serviceId) || Number(data.service_id) || 0,
       section_title: sanitize(data.sectionTitle || data.section_title) || null,
-      item_number: Math.max(1, Math.floor(Number(data.itemNumber || data.item_number || 1))),
+      item_number: Math.max(
+        1,
+        Math.floor(Number(data.itemNumber || data.item_number || 1))
+      ),
       item_icon: sanitize(data.itemIcon || data.item_icon) || null,
       item_title: sanitize(data.itemTitle || data.item_title),
-      item_description: sanitize(data.itemDescription || data.item_description) || null,
-      order_index: Math.max(0, Math.floor(Number(data.orderIndex || data.order_index || 0))),
-      layout_type: Math.max(1, Math.min(4, Math.floor(Number(data.layoutType || data.layout_type || 1)))),
+      item_description:
+        sanitize(data.itemDescription || data.item_description) || null,
+      order_index: Math.max(
+        0,
+        Math.floor(Number(data.orderIndex || data.order_index || 0))
+      ),
+      layout_type: Math.max(
+        1,
+        Math.min(
+          4,
+          Math.floor(Number(data.layoutType || data.layout_type || 1))
+        )
+      ),
       sub_items: JSON.stringify(subItems),
       iconized: Boolean(data.iconized),
     };
@@ -673,8 +697,7 @@ export const serviceLayoutsService = {
       dbData.item_number = Math.max(1, Math.floor(Number(data.itemNumber)));
     if (data.item_number !== undefined)
       dbData.item_number = Math.max(1, Math.floor(Number(data.item_number)));
-    if (data.itemIcon !== undefined)
-      dbData.item_icon = sanitize(data.itemIcon);
+    if (data.itemIcon !== undefined) dbData.item_icon = sanitize(data.itemIcon);
     if (data.item_icon !== undefined)
       dbData.item_icon = sanitize(data.item_icon);
     if (data.itemTitle !== undefined)
@@ -689,29 +712,34 @@ export const serviceLayoutsService = {
       dbData.order_index = Math.max(0, Math.floor(Number(data.orderIndex)));
     if (data.order_index !== undefined)
       dbData.order_index = Math.max(0, Math.floor(Number(data.order_index)));
-    
+
     // New layout type fields
     if (data.layoutType !== undefined)
-      dbData.layout_type = Math.max(1, Math.min(4, Math.floor(Number(data.layoutType))));
+      dbData.layout_type = Math.max(
+        1,
+        Math.min(4, Math.floor(Number(data.layoutType)))
+      );
     if (data.layout_type !== undefined)
-      dbData.layout_type = Math.max(1, Math.min(4, Math.floor(Number(data.layout_type))));
-    
+      dbData.layout_type = Math.max(
+        1,
+        Math.min(4, Math.floor(Number(data.layout_type)))
+      );
+
     // Handle sub_items - can be array or JSON string
     if (data.subItems !== undefined || data.sub_items !== undefined) {
       let subItems = [];
       const raw = data.subItems ?? data.sub_items;
       if (raw) {
         try {
-          subItems = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          subItems = typeof raw === "string" ? JSON.parse(raw) : raw;
         } catch (e) {
           subItems = [];
         }
       }
       dbData.sub_items = JSON.stringify(subItems);
     }
-    
-    if (data.iconized !== undefined)
-      dbData.iconized = Boolean(data.iconized);
+
+    if (data.iconized !== undefined) dbData.iconized = Boolean(data.iconized);
 
     dbData.updated_at = new Date().toISOString();
     return dbService.update("service_layouts", id, dbData);
@@ -1266,6 +1294,85 @@ export const adminService = {
   },
 
   // Reporting helpers built from timetrackingrecords + employees
+  async getDetailedDailyReport(startDate: string, endDate: string) {
+    const employees = (await dbService.select<any>("employees")) || [];
+    const records = (await dbService.select<any>("timetrackingrecords", {
+      order: "date",
+      ascending: true,
+    })) as any[];
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const byDate = new Map<
+      string,
+      {
+        date: string;
+        totalHours: number;
+        overtimeHours: number;
+        employeeIds: Set<number>;
+        employees: {
+          employeeId: number;
+          employeeName: string;
+          hours: number;
+          overtimeHours: number;
+          taskType: string;
+          projectName: string;
+        }[];
+      }
+    >();
+
+    for (const rec of records) {
+      if (!rec.date) continue;
+      const d = new Date(rec.date);
+      if (d < start || d > end) continue;
+
+      const key = rec.date as string;
+      if (!byDate.has(key)) {
+        byDate.set(key, {
+          date: key,
+          totalHours: 0,
+          overtimeHours: 0,
+          employeeIds: new Set<number>(),
+          employees: [],
+        });
+      }
+
+      const agg = byDate.get(key)!;
+      const duration = parseFloat(rec.duration) || 0;
+      const overtime = parseFloat(rec.overtime) || 0;
+      const empId = rec.employeeid as number;
+
+      agg.totalHours += duration;
+      agg.overtimeHours += overtime;
+
+      if (empId) {
+        agg.employeeIds.add(empId);
+        const empRow = employees.find((e: any) => e.id === empId) ?? {};
+        const empName = `${empRow.firstname ?? empRow.firstName ?? "Unknown"} ${empRow.lastname ?? empRow.lastName ?? ""}`;
+
+        agg.employees.push({
+          employeeId: empId,
+          employeeName: empName.trim(),
+          hours: duration,
+          overtimeHours: overtime,
+          taskType: rec.tasktype || "Other",
+          projectName: rec.projectnumber || rec.projectname || "N/A",
+        });
+      }
+    }
+
+    return Array.from(byDate.values()).map(day => ({
+      date: day.date,
+      totalHours: day.totalHours,
+      employeeCount: day.employeeIds.size,
+      overtimeHours: day.overtimeHours,
+      employees: day.employees,
+      avgHoursPerEmployee:
+        day.employeeIds.size > 0 ? day.totalHours / day.employeeIds.size : 0,
+    }));
+  },
+
   async getMonthlyReportSummary(year: number, month: number) {
     // Load all employees for name/metadata
     const employees = (await dbService.select<any>("employees")) || [];
