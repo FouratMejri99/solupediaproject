@@ -962,10 +962,10 @@ export const leadsService = {
 
     if (API_URL) {
       try {
-        const response = await fetch(`${API_URL}/api/subscribe`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/subscribe`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, type }),
+          body: JSON.stringify({ email, type: "subscribe" }),
         });
 
         if (response.ok) {
