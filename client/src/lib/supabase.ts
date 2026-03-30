@@ -304,21 +304,53 @@ export const caseStudiesService = {
     dataUrl: string;
   }): Promise<{ url: string }> {
     const { fileName, contentType, dataUrl } = input;
-    // Convert data URL to Blob reliably in the browser
-    const blob = await (await fetch(dataUrl)).blob();
 
-    const path = `case-studies/${Date.now()}-${fileName}`;
-    const { error } = await supabase.storage
+    // Sanitize the fileName to avoid issues with special characters
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
+
+    // Convert data URL to Blob reliably in the browser
+    let blob: Blob;
+    try {
+      blob = await (await fetch(dataUrl)).blob();
+    } catch (fetchError) {
+      console.error("Failed to fetch data URL:", fetchError);
+      // Fallback: manually construct blob from base64 data
+      const base64Data = dataUrl.split(",")[1];
+      if (!base64Data) {
+        throw new Error("Invalid data URL format");
+      }
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      blob = new Blob([byteArray], { type: contentType });
+    }
+
+    const path = `case-studies/${Date.now()}-${sanitizedFileName}`;
+    console.log("Uploading case study image to:", path);
+
+    const { data, error } = await supabase.storage
       .from("public-assets")
       .upload(path, blob, {
         contentType,
         upsert: true,
       });
-    if (error) throw error;
 
-    const { data } = supabase.storage.from("public-assets").getPublicUrl(path);
+    if (error) {
+      console.error("Storage upload error:", error);
+      throw error;
+    }
 
-    return { url: data.publicUrl };
+    console.log("Upload successful, data:", data);
+
+    const { data: urlData } = supabase.storage
+      .from("public-assets")
+      .getPublicUrl(path);
+
+    console.log("Public URL:", urlData.publicUrl);
+    return { url: urlData.publicUrl };
   },
 
   // Simple seeding helper to populate example case studies
@@ -962,11 +994,17 @@ export const leadsService = {
 
     if (API_URL) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/subscribe`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, type: "subscribe" }),
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/subscribe`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              type, // ✅ use real type
+            }),
+          }
+        );
 
         if (response.ok) {
           console.log("Subscription processed via Nodemailer server!");

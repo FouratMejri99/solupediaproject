@@ -172,21 +172,38 @@ export default function AdminCaseStudies() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
     try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const dataUrl = reader.result as string;
-        const result = await uploadImageMutation.mutateAsync({
-          fileName: file.name,
-          contentType: file.type,
-          dataUrl,
-        });
-        setFormData({ ...formData, imageUrl: result.url });
-        toast.success("Image uploaded successfully!");
-      };
-      reader.readAsDataURL(file);
+      // Create a preview URL first for better UX
+      const previewUrl = URL.createObjectURL(file);
+
+      const result = await uploadImageMutation.mutateAsync({
+        fileName: file.name,
+        contentType: file.type,
+        dataUrl: previewUrl,
+      });
+
+      // Revoke the preview URL since we have the real URL now
+      URL.revokeObjectURL(previewUrl);
+
+      setFormData({ ...formData, imageUrl: result.url });
+      toast.success("Image uploaded successfully!");
     } catch (error) {
-      toast.error("Failed to upload image");
+      console.error("Upload error:", error);
+      toast.error(
+        error?.message || "Failed to upload image. Please try again."
+      );
     }
   };
 
@@ -561,6 +578,75 @@ export default function AdminCaseStudies() {
                       className="mt-2"
                     >
                       Remove Image
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <Label>Client Logo</Label>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
+                    <Upload size={18} />
+                    Upload Logo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (!file.type.startsWith("image/")) {
+                          toast.error("Please select a valid image file");
+                          return;
+                        }
+                        if (file.size > 2 * 1024 * 1024) {
+                          toast.error("Logo must be less than 2MB");
+                          return;
+                        }
+                        try {
+                          const previewUrl = URL.createObjectURL(file);
+                          const result = await uploadImageMutation.mutateAsync({
+                            fileName: `logo-${file.name}`,
+                            contentType: file.type,
+                            dataUrl: previewUrl,
+                          });
+                          URL.revokeObjectURL(previewUrl);
+                          setFormData({ ...formData, clientLogo: result.url });
+                          toast.success("Logo uploaded successfully!");
+                        } catch (error) {
+                          console.error("Logo upload error:", error);
+                          toast.error(
+                            error?.message || "Failed to upload logo"
+                          );
+                        }
+                      }}
+                      className="hidden"
+                      disabled={uploadImageMutation.isLoading}
+                    />
+                  </label>
+                  {formData.clientLogo && (
+                    <span className="text-sm text-green-600">
+                      Logo uploaded!
+                    </span>
+                  )}
+                </div>
+                {formData.clientLogo && (
+                  <div className="mt-4">
+                    <img
+                      src={formData.clientLogo}
+                      alt="Client Logo Preview"
+                      className="max-w-xs h-20 object-contain rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setFormData({ ...formData, clientLogo: "" })
+                      }
+                      className="mt-2"
+                    >
+                      Remove Logo
                     </Button>
                   </div>
                 )}
